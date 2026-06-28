@@ -177,6 +177,10 @@ function TreesContent() {
 
     const { nodes, edges } = parseTreeInput(treeText);
     const adj = buildTreeAdjacency(nodes, edges);
+    const runnerAdj = {};
+    for (const node of nodes) {
+        runnerAdj[node] = (adj[node] || []).map((to) => ({ to }));
+    }
     const root = nodes.length > 0 ? pickRoot(nodes) : null;
     const { parent, depth } = root
         ? buildTreeStructure(nodes, adj, root)
@@ -213,6 +217,27 @@ function TreesContent() {
                             color: "var(--ink)",
                         }}
                     />
+
+                    <div className="flex-shrink-0 w-full sm:w-64">
+                        {nodes.length > 0 && (
+                            <p
+                                className="text-xs font-mono-cf mt-2 mb-3"
+                                style={{ color: "var(--muted)" }}
+                            >
+                                {nodes.length} node(s), root ={" "}
+                                <strong style={{ color: "var(--ink)" }}>
+                                    {root}
+                                </strong>
+                            </p>
+                        )}
+
+                        <AlgorithmRunner
+                            nodes={nodes}
+                            adj={runnerAdj}
+                            onStateChange={setNodeStates}
+                        />
+                    </div>
+
                     <div className="flex-1 min-w-[240px] w-full">
                         <GraphCanvas
                             nodes={nodes}
@@ -222,15 +247,6 @@ function TreesContent() {
                         />
                     </div>
                 </div>
-                {nodes.length > 0 && (
-                    <p
-                        className="text-xs font-mono-cf mt-2"
-                        style={{ color: "var(--muted)" }}
-                    >
-                        {nodes.length} node(s), root ={" "}
-                        <strong style={{ color: "var(--ink)" }}>{root}</strong>
-                    </p>
-                )}
             </ToolBlock>
 
             {nodes.length > 0 && (
@@ -282,14 +298,6 @@ function TreesContent() {
                                 </>
                             )}
                         </p>
-                    </ToolBlock>
-
-                    <ToolBlock label="BFS / DFS traversal">
-                        <AlgorithmRunner
-                            nodes={nodes}
-                            adj={adj}
-                            onStateChange={setNodeStates}
-                        />
                     </ToolBlock>
                 </>
             )}

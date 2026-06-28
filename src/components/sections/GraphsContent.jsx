@@ -47,7 +47,7 @@ function GraphsContent() {
                         }}
                     />
 
-                    <div className="flex-shrink-0 w-full sm:w-44">
+                    <div className="flex-shrink-0 w-full sm:w-64">
                         <label
                             className="flex items-center gap-2 mb-3 text-xs font-mono-cf"
                             style={{ color: "var(--muted)" }}

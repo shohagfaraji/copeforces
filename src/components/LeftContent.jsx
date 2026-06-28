@@ -32,6 +32,7 @@ function LeftContent({ theme, toggleTheme }) {
                 theme={theme}
                 toggleTheme={toggleTheme}
                 onOpenMenu={toggle}
+                activeMeta={activeMeta}
             />
             <MobileSidebarDrawer
                 activeSection={activeSection}

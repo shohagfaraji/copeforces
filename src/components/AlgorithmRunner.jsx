@@ -93,16 +93,16 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
 
     return (
         <div>
-            <div className="flex flex-col gap-2 mb-3">
+            <div className="flex items-end gap-2 mb-3">
                 <label
-                    className="text-xs font-mono-cf"
+                    className="text-xs font-mono-cf flex-1 min-w-0"
                     style={{ color: "var(--muted)" }}
                 >
                     Algorithm
                     <select
                         value={algorithm}
                         onChange={(e) => setAlgorithm(e.target.value)}
-                        className="block mt-1 p-2 rounded-md border font-mono-cf text-sm outline-none"
+                        className="block w-full mt-1 p-2 rounded-md border font-mono-cf text-sm outline-none"
                         style={{
                             borderColor: "var(--line)",
                             backgroundColor: "var(--bg)",
@@ -115,14 +115,14 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
                 </label>
 
                 <label
-                    className="text-xs font-mono-cf"
+                    className="text-xs font-mono-cf flex-1 min-w-0"
                     style={{ color: "var(--muted)" }}
                 >
                     Start node
                     <select
                         value={startNode}
                         onChange={(e) => setStartNode(e.target.value)}
-                        className="block mt-1 p-2 rounded-md border font-mono-cf text-sm outline-none"
+                        className="block w-full mt-1 p-2 rounded-md border font-mono-cf text-sm outline-none"
                         style={{
                             borderColor: "var(--line)",
                             backgroundColor: "var(--bg)",
@@ -139,7 +139,7 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
 
                 <button
                     onClick={buildSteps}
-                    className="font-mono-cf text-xs px-3 py-2 rounded-md border hover:opacity-70"
+                    className="font-mono-cf text-xs px-3 py-2 rounded-md border hover:opacity-70 flex-shrink-0"
                     style={{
                         borderColor: "var(--line)",
                         color: "var(--accent-blue)",

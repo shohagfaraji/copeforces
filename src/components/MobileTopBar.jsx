@@ -1,16 +1,16 @@
 import logoLight from "../assets/logo/logo-light.webp";
 import logoDark from "../assets/logo/logo-dark.webp";
 
-function MobileTopBar({ theme, toggleTheme, onOpenMenu }) {
+function MobileTopBar({ theme, toggleTheme, onOpenMenu, activeMeta }) {
     return (
         <header
-            className="lg:hidden h-14 flex items-center justify-between px-3 border-b flex-shrink-0"
+            className="lg:hidden h-14 flex items-center justify-between gap-2 px-3 border-b flex-shrink-0"
             style={{ borderColor: "var(--line)" }}
         >
             <button
                 onClick={onOpenMenu}
                 aria-label="Open menu"
-                className="flex items-center justify-center w-9 h-9 rounded-md hover:opacity-70 -ml-1"
+                className="flex items-center justify-center w-9 h-9 rounded-md hover:opacity-70 -ml-1 flex-shrink-0"
                 style={{ color: "var(--ink)" }}
             >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -23,9 +23,23 @@ function MobileTopBar({ theme, toggleTheme, onOpenMenu }) {
                 </svg>
             </button>
 
-            <span className="font-semibold text-base tracking-tight">
-                copeforces
-            </span>
+            {activeMeta ? (
+                <div className="flex items-baseline gap-1.5 min-w-0 flex-1 justify-center">
+                    <span
+                        className="font-mono-cf text-xs font-bold flex-shrink-0"
+                        style={{ color: activeMeta.color }}
+                    >
+                        {activeMeta.tag}
+                    </span>
+                    <span className="text-sm font-medium truncate">
+                        {activeMeta.title}
+                    </span>
+                </div>
+            ) : (
+                <span className="font-semibold text-base tracking-tight flex-1 text-center">
+                    copeforces
+                </span>
+            )}
 
             <button
                 onClick={toggleTheme}
