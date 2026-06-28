@@ -9,6 +9,8 @@
     --line: #e3e1db;
     --accent-blue: #3577d4;
     --accent-violet: #8b2fc9;
+    --rail-w-expanded: 224px;
+    --rail-w-collapsed: 64px;
 }
 
 .dark {
@@ -28,4 +30,45 @@ body {
 
 .font-mono-cf {
     font-family: "JetBrains Mono", monospace;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    background-color: var(--bg);
+    color: var(--ink);
+    overscroll-behavior: none;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+}
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+    background-color: var(--line);
+    border-radius: 8px;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+    }
 }

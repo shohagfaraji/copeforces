@@ -35,11 +35,17 @@ function ToolBlock({ label, children }) {
 
 function Row({ label, children }) {
     return (
-        <div className="flex gap-2">
-            <span className="flex-shrink-0" style={{ minWidth: "140px" }}>
+        <div className="flex flex-col sm:flex-row gap-0.5 sm:gap-2">
+            <span
+                className="flex-shrink-0 sm:min-w-[140px]"
+                style={{ color: "var(--muted)" }}
+            >
                 {label}:
             </span>
-            <span className="font-mono-cf" style={{ color: "var(--ink)" }}>
+            <span
+                className="font-mono-cf break-all"
+                style={{ color: "var(--ink)" }}
+            >
                 {children}
             </span>
         </div>
@@ -170,7 +176,7 @@ function GcdLcmResult({ numbers }) {
     return (
         <div>
             <div
-                className="p-3 rounded-md border font-mono-cf text-sm flex gap-6"
+                className="p-3 rounded-md border font-mono-cf text-sm flex gap-6 flex-wrap"
                 style={{ borderColor: "var(--line)" }}
             >
                 <span>

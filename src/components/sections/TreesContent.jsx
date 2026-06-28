@@ -206,14 +206,14 @@ function TreesContent() {
                         }}
                         placeholder={"child parent\nor\nu v (edge)"}
                         rows={10}
-                        className="w-32 flex-shrink-0 p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
+                        className="w-full sm:w-32 flex-shrink-0 p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
                         style={{
                             borderColor: "var(--line)",
                             backgroundColor: "var(--bg)",
                             color: "var(--ink)",
                         }}
                     />
-                    <div className="flex-1 min-w-[280px]">
+                    <div className="flex-1 min-w-[240px] w-full">
                         <GraphCanvas
                             nodes={nodes}
                             edges={edges}
@@ -319,7 +319,7 @@ function LcaToolWrapper({ nodes, parent, depth, onHighlight }) {
 
     return (
         <div>
-            <div className="flex gap-3 mb-3 items-end">
+            <div className="flex gap-3 mb-3 items-end flex-wrap">
                 <label
                     className="text-xs font-mono-cf"
                     style={{ color: "var(--muted)" }}

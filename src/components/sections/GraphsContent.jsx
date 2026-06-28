@@ -39,7 +39,7 @@ function GraphsContent() {
                         }}
                         placeholder={"u v\nu v w"}
                         rows={10}
-                        className="w-28 flex-shrink-0 p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
+                        className="w-full sm:w-28 flex-shrink-0 p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
                         style={{
                             borderColor: "var(--line)",
                             backgroundColor: "var(--bg)",
@@ -47,7 +47,7 @@ function GraphsContent() {
                         }}
                     />
 
-                    <div className="flex-shrink-0 w-44">
+                    <div className="flex-shrink-0 w-full sm:w-44">
                         <label
                             className="flex items-center gap-2 mb-3 text-xs font-mono-cf"
                             style={{ color: "var(--muted)" }}
@@ -78,7 +78,7 @@ function GraphsContent() {
                         )}
                     </div>
 
-                    <div className="flex-1 min-w-[280px]">
+                    <div className="flex-1 min-w-[240px] w-full">
                         <GraphCanvas
                             nodes={nodes}
                             edges={edges}
