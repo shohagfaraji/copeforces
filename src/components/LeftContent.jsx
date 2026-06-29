@@ -3,6 +3,7 @@ import Navbar from "./Navbar";
 import MobileTopBar from "./MobileTopBar";
 import Sidebar, { MobileSidebarDrawer } from "./Sidebar";
 import Section from "./Section";
+import Footer from "./Footer";
 import { sections } from "../data/sections";
 import { useActiveSection } from "../hooks/useActiveSection";
 import { useSidebar } from "../hooks/useSidebar";
@@ -58,28 +59,6 @@ function LeftContent({ theme, toggleTheme }) {
                 </div>
 
                 <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-                    <div
-                        className="hidden lg:flex h-14 items-center px-5 border-b flex-shrink-0"
-                        style={{ borderColor: "var(--line)" }}
-                    >
-                        {activeMeta && (
-                            <div className="flex items-baseline gap-2">
-                                <span
-                                    className="font-mono-cf text-xs font-bold"
-                                    style={{ color: activeMeta.color }}
-                                >
-                                    {activeMeta.tag}
-                                </span>
-                                <span
-                                    className="text-sm font-medium"
-                                    style={{ color: "var(--muted)" }}
-                                >
-                                    {activeMeta.title}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
                     <div ref={scrollRef} className="flex-1 overflow-y-auto">
                         {sections.map((section) => (
                             <Section
@@ -109,6 +88,7 @@ function LeftContent({ theme, toggleTheme }) {
                                 )}
                             </Section>
                         ))}
+                        <Footer theme={theme} />
                     </div>
                 </div>
             </div>
