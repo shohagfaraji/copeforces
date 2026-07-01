@@ -1,24 +1,91 @@
 import { useState } from "react";
+import { FaBriefcase, FaLink, FaCoins, FaChartLine } from "react-icons/fa";
 import {
     knapsack01,
     longestCommonSubsequence,
     minCoinChange,
     longestIncreasingSubsequence,
 } from "../../utils/dpTools";
+import { sections } from "../../data/sections";
 
-function ToolBlock({ label, children }) {
+const ACCENT =
+    sections.find((s) => s.id === "dynamic-programming")?.color || "#AA00AA";
+
+function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div className="mb-6">
-            <h3
-                className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-2 pb-1.5 border-b"
-                style={{ color: "var(--muted)", borderColor: "var(--line)" }}
+        <div id={id} className="mb-6 scroll-mt-24">
+            <div
+                className="flex items-center gap-2 mb-2 pb-1.5 border-b"
+                style={{ borderColor: "var(--line)" }}
             >
-                {label}
-            </h3>
+                <span
+                    className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
+                    style={{
+                        backgroundColor: "var(--sec-accent-bg)",
+                        color: "var(--sec-accent)",
+                    }}
+                >
+                    <Icon size={12} />
+                </span>
+
+                <h3
+                    className="font-mono-cf text-xs font-bold uppercase tracking-wider"
+                    style={{ color: "var(--muted)" }}
+                >
+                    {label}
+                </h3>
+            </div>
             {children}
         </div>
     );
 }
+
+function QuickNav({ items }) {
+    return (
+        <nav
+            aria-label="Jump to a tool"
+            className="flex flex-wrap gap-1.5 mb-6"
+        >
+            {items.map(({ id, label, icon: Icon }) => (
+                <a
+                    key={id}
+                    href={`#${id}`}
+                    className="cf-pill inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono-cf"
+                    style={{
+                        borderColor: "var(--line)",
+                        color: "var(--muted)",
+                    }}
+                >
+                    <Icon size={10} />
+                    {label}
+                </a>
+            ))}
+        </nav>
+    );
+}
+
+const TOOLS = [
+    {
+        id: "dp-knapsack",
+        label: "0/1 knapsack",
+        icon: FaBriefcase,
+    },
+    {
+        id: "dp-lcs",
+        label: "Longest common subsequence",
+        icon: FaLink,
+    },
+    {
+        id: "dp-coin-change",
+        label: "Coin change (DP)",
+        icon: FaCoins,
+    },
+    {
+        id: "dp-lis",
+        label: "Longest increasing subsequence",
+        icon: FaChartLine,
+    },
+];
 
 function TextArea({ value, onChange, placeholder, rows = 4 }) {
     return (
@@ -477,20 +544,40 @@ function LisTool() {
 
 function DynamicProgrammingContent() {
     return (
-        <div>
-            <ToolBlock label="0/1 knapsack">
+        <div
+            style={{
+                "--sec-accent": ACCENT,
+                "--sec-accent-soft": `${ACCENT}80`,
+                "--sec-accent-bg": `${ACCENT}20`,
+            }}
+        >
+            <QuickNav items={TOOLS} />
+
+            <ToolBlock id="dp-knapsack" icon={FaBriefcase} label="0/1 knapsack">
                 <KnapsackTool />
             </ToolBlock>
 
-            <ToolBlock label="Longest common subsequence">
+            <ToolBlock
+                id="dp-lcs"
+                icon={FaLink}
+                label="Longest common subsequence"
+            >
                 <LcsTool />
             </ToolBlock>
 
-            <ToolBlock label="Coin change — minimum coins (DP)">
+            <ToolBlock
+                id="dp-coin-change"
+                icon={FaCoins}
+                label="Coin change — minimum coins (DP)"
+            >
                 <MinCoinChangeTool />
             </ToolBlock>
 
-            <ToolBlock label="Longest increasing subsequence">
+            <ToolBlock
+                id="dp-lis"
+                icon={FaChartLine}
+                label="Longest increasing subsequence"
+            >
                 <LisTool />
             </ToolBlock>
         </div>

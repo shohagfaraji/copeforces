@@ -194,11 +194,7 @@ function OutputPanel({ label = "Result", value, error, hint, copyValue }) {
 
 function ToolCard({ id, icon: Icon, label, hint, children }) {
     return (
-        <div
-            id={id}
-            className="cf-tool-card rounded-xl border p-4 sm:p-5 h-full scroll-mt-20"
-            style={{ borderColor: "var(--line)" }}
-        >
+        <div id={id} className="h-full scroll-mt-20">
             <div
                 className="flex items-center gap-2.5 mb-4 pb-3 border-b"
                 style={{ borderColor: "var(--line)" }}
@@ -206,8 +202,8 @@ function ToolCard({ id, icon: Icon, label, hint, children }) {
                 <span
                     className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
                     style={{
-                        backgroundColor: "var(--cu-accent-bg)",
-                        color: "var(--cu-accent)",
+                        backgroundColor: "var(--sec-accent-bg)",
+                        color: "var(--sec-accent)",
                     }}
                 >
                     <Icon size={12} />
@@ -1002,9 +998,9 @@ function ContestUtilitiesContent() {
     return (
         <div
             style={{
-                "--cu-accent": ACCENT,
-                "--cu-accent-soft": hexToRgba(ACCENT, 0.5),
-                "--cu-accent-bg": hexToRgba(ACCENT, 0.12),
+                "--sec-accent": ACCENT,
+                "--sec-accent-soft": `${ACCENT}80`,
+                "--sec-accent-bg": `${ACCENT}20`,
             }}
         >
             <QuickNav tools={TOOLS} />

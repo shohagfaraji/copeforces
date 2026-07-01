@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaClock, FaBriefcase, FaCoins, FaTasks } from "react-icons/fa";
 import {
     activitySelection,
     fractionalKnapsack,
@@ -6,20 +7,85 @@ import {
     optimalCoinChange,
     jobSequencing,
 } from "../../utils/greedyTools";
+import { sections } from "../../data/sections";
 
-function ToolBlock({ label, children }) {
+const ACCENT = sections.find((s) => s.id === "greedy")?.color || "#FF8C00";
+
+function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div className="mb-6">
-            <h3
-                className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-2 pb-1.5 border-b"
-                style={{ color: "var(--muted)", borderColor: "var(--line)" }}
+        <div id={id} className="mb-6 scroll-mt-24">
+            <div
+                className="flex items-center gap-2 mb-2 pb-1.5 border-b"
+                style={{ borderColor: "var(--line)" }}
             >
-                {label}
-            </h3>
+                <span
+                    className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
+                    style={{
+                        backgroundColor: "var(--sec-accent-bg)",
+                        color: "var(--sec-accent)",
+                    }}
+                >
+                    <Icon size={12} />
+                </span>
+
+                <h3
+                    className="font-mono-cf text-xs font-bold uppercase tracking-wider"
+                    style={{ color: "var(--muted)" }}
+                >
+                    {label}
+                </h3>
+            </div>
             {children}
         </div>
     );
 }
+
+function QuickNav({ items }) {
+    return (
+        <nav
+            aria-label="Jump to a tool"
+            className="flex flex-wrap gap-1.5 mb-6"
+        >
+            {items.map(({ id, label, icon: Icon }) => (
+                <a
+                    key={id}
+                    href={`#${id}`}
+                    className="cf-pill inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono-cf"
+                    style={{
+                        borderColor: "var(--line)",
+                        color: "var(--muted)",
+                    }}
+                >
+                    <Icon size={10} />
+                    {label}
+                </a>
+            ))}
+        </nav>
+    );
+}
+
+const TOOLS = [
+    {
+        id: "gd-activity-selection",
+        label: "Activity selection",
+        icon: FaClock,
+    },
+    {
+        id: "gd-fractional-knapsack",
+        label: "Fractional knapsack",
+        icon: FaBriefcase,
+    },
+    {
+        id: "gd-coin-change",
+        label: "Coin change",
+        icon: FaCoins,
+    },
+    {
+        id: "gd-job-sequencing",
+        label: "Job sequencing",
+        icon: FaTasks,
+    },
+];
 
 function TextArea({ value, onChange, placeholder, rows = 4 }) {
     return (
@@ -408,20 +474,44 @@ function JobSequencingTool() {
 
 function GreedyContent() {
     return (
-        <div>
-            <ToolBlock label="Activity selection">
+        <div
+            style={{
+                "--sec-accent": ACCENT,
+                "--sec-accent-soft": `${ACCENT}80`,
+                "--sec-accent-bg": `${ACCENT}20`,
+            }}
+        >
+            <QuickNav items={TOOLS} />
+
+            <ToolBlock
+                id="gd-activity-selection"
+                icon={FaClock}
+                label="Activity selection"
+            >
                 <ActivitySelectionTool />
             </ToolBlock>
 
-            <ToolBlock label="Fractional knapsack">
+            <ToolBlock
+                id="gd-fractional-knapsack"
+                icon={FaBriefcase}
+                label="Fractional knapsack"
+            >
                 <FractionalKnapsackTool />
             </ToolBlock>
 
-            <ToolBlock label="Coin change — greedy vs optimal">
+            <ToolBlock
+                id="gd-coin-change"
+                icon={FaCoins}
+                label="Coin change — greedy vs optimal"
+            >
                 <CoinChangeTool />
             </ToolBlock>
 
-            <ToolBlock label="Job sequencing with deadlines">
+            <ToolBlock
+                id="gd-job-sequencing"
+                icon={FaTasks}
+                label="Job sequencing with deadlines"
+            >
                 <JobSequencingTool />
             </ToolBlock>
         </div>

@@ -1,5 +1,16 @@
 import { useState } from "react";
 import {
+    FaHashtag,
+    FaDivide,
+    FaListOl,
+    FaShieldAlt,
+    FaPercentage,
+    FaSuperscript,
+    FaRandom,
+    FaMicrochip,
+    FaCalculator,
+} from "react-icons/fa";
+import {
     getDivisors,
     isPrime,
     toBinary,
@@ -18,20 +29,81 @@ import {
     INT_MAX,
     LLONG_MAX,
 } from "../../utils/numberTheory";
+import { sections } from "../../data/sections";
 
-function ToolBlock({ label, children }) {
+const ACCENT =
+    sections.find((s) => s.id === "number-theory")?.color || "#008000";
+
+function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div className="mb-8">
-            <h3
-                className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-3 pb-2 border-b"
-                style={{ color: "var(--muted)", borderColor: "var(--line)" }}
+        <div id={id} className="mb-8 scroll-mt-24">
+            <div
+                className="flex items-center gap-2 mb-3 pb-2 border-b"
+                style={{ borderColor: "var(--line)" }}
             >
-                {label}
-            </h3>
+                <span
+                    className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
+                    style={{
+                        backgroundColor: "var(--sec-accent-bg)",
+                        color: "var(--sec-accent)",
+                    }}
+                >
+                    <Icon size={12} />
+                </span>
+
+                <h3
+                    className="font-mono-cf text-xs font-bold uppercase tracking-wider"
+                    style={{ color: "var(--muted)" }}
+                >
+                    {label}
+                </h3>
+            </div>
             {children}
         </div>
     );
 }
+
+function QuickNav({ items }) {
+    return (
+        <nav
+            aria-label="Jump to a tool"
+            className="flex flex-wrap gap-1.5 mb-6"
+        >
+            {items.map(({ id, label, icon: Icon }) => (
+                <a
+                    key={id}
+                    href={`#${id}`}
+                    className="cf-pill inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono-cf"
+                    style={{
+                        borderColor: "var(--line)",
+                        color: "var(--muted)",
+                    }}
+                >
+                    <Icon size={10} />
+                    {label}
+                </a>
+            ))}
+        </nav>
+    );
+}
+
+const TOOLS = [
+    {
+        id: "nt-prime-check",
+        label: "Prime checker",
+        icon: FaShieldAlt,
+    },
+    {
+        id: "nt-bitwise-operations",
+        label: "Bitwise operations",
+        icon: FaMicrochip,
+    },
+    {
+        id: "nt-modular-exponentiation",
+        label: "Modular exponentiation",
+        icon: FaSuperscript,
+    },
+];
 
 function Row({ label, children }) {
     return (
@@ -355,8 +427,20 @@ function NumberTheoryContent() {
     };
 
     return (
-        <div>
-            <ToolBlock label="Number breakdown">
+        <div
+            style={{
+                "--sec-accent": ACCENT,
+                "--sec-accent-soft": `${ACCENT}80`,
+                "--sec-accent-bg": `${ACCENT}20`,
+            }}
+        >
+            <QuickNav items={TOOLS} />
+
+            <ToolBlock
+                id="nt-prime-check"
+                icon={FaShieldAlt}
+                label="Prime checker"
+            >
                 <textarea
                     value={input}
                     onChange={handleChange}
@@ -393,12 +477,20 @@ function NumberTheoryContent() {
             </ToolBlock>
 
             {numbers.length > 1 && (
-                <ToolBlock label="Bitwise operations across all numbers">
+                <ToolBlock
+                    id="nt-bitwise-operations"
+                    icon={FaMicrochip}
+                    label="Bitwise operations across all numbers"
+                >
                     <BitwiseResult numbers={numbers} />
                 </ToolBlock>
             )}
 
-            <ToolBlock label="Modular exponentiation">
+            <ToolBlock
+                id="nt-modular-exponentiation"
+                icon={FaSuperscript}
+                label="Modular exponentiation"
+            >
                 <ModPowCalculator />
             </ToolBlock>
         </div>

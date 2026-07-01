@@ -1,17 +1,36 @@
 import { useState } from "react";
+import { FaProjectDiagram } from "react-icons/fa";
 import { parseEdgeList, buildAdjacency } from "../../utils/graphTools";
 import GraphCanvas from "../GraphCanvas";
 import AlgorithmRunner from "../AlgorithmRunner";
+import { sections } from "../../data/sections";
 
-function ToolBlock({ label, children }) {
+const ACCENT = sections.find((s) => s.id === "graphs")?.color || "#0000FF";
+
+function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div className="mb-8">
-            <h3
-                className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-3 pb-2 border-b"
-                style={{ color: "var(--muted)", borderColor: "var(--line)" }}
+        <div id={id} className="mb-8 scroll-mt-24">
+            <div
+                className="flex items-center gap-2 mb-3 pb-2 border-b"
+                style={{ borderColor: "var(--line)" }}
             >
-                {label}
-            </h3>
+                <span
+                    className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
+                    style={{
+                        backgroundColor: "var(--sec-accent-bg)",
+                        color: "var(--sec-accent)",
+                    }}
+                >
+                    <Icon size={12} />
+                </span>
+
+                <h3
+                    className="font-mono-cf text-xs font-bold uppercase tracking-wider"
+                    style={{ color: "var(--muted)" }}
+                >
+                    {label}
+                </h3>
+            </div>
             {children}
         </div>
     );
@@ -28,8 +47,18 @@ function GraphsContent() {
     const adj = buildAdjacency(nodes, edges, directed);
 
     return (
-        <div>
-            <ToolBlock label="Graph builder and traversal">
+        <div
+            style={{
+                "--sec-accent": ACCENT,
+                "--sec-accent-soft": `${ACCENT}80`,
+                "--sec-accent-bg": `${ACCENT}20`,
+            }}
+        >
+            <ToolBlock
+                id="gr-graph-builder"
+                icon={FaProjectDiagram}
+                label="Graph builder and traversal"
+            >
                 <div className="flex gap-4 items-start flex-wrap">
                     <textarea
                         value={edgeText}

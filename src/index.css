@@ -84,7 +84,7 @@ body {
     transition: border-color 150ms ease;
 }
 .cf-tool-card:hover {
-    border-color: var(--cu-accent-soft, var(--line));
+    border-color: var(--sec-accent-soft, var(--line));
 }
 .cf-pill {
     transition:
@@ -93,8 +93,8 @@ body {
         background-color 150ms ease;
 }
 .cf-pill:hover {
-    border-color: var(--cu-accent-soft, var(--line));
-    color: var(--cu-accent, var(--ink));
+    border-color: var(--sec-accent-soft, var(--line));
+    color: var(--sec-accent, var(--ink));
 }
 .cf-copy-hint {
     transition: opacity 100ms ease;

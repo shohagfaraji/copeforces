@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaFont, FaSearch, FaLink, FaStream } from "react-icons/fa";
 import {
     isPalindrome,
     reverseString,
@@ -8,20 +9,99 @@ import {
     zFunction,
     findOccurrences,
 } from "../../utils/stringTools";
+import { sections } from "../../data/sections";
 
-function ToolBlock({ label, children }) {
+const ACCENT = sections.find((s) => s.id === "strings")?.color || "#808080";
+
+function hexToRgba(hex, alpha) {
+    const clean = hex.replace("#", "");
+    const full =
+        clean.length === 3
+            ? clean
+                  .split("")
+                  .map((c) => c + c)
+                  .join("")
+            : clean;
+    const int = parseInt(full, 16);
+
+    return `rgba(${(int >> 16) & 255}, ${(int >> 8) & 255}, ${int & 255}, ${alpha})`;
+}
+
+function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div className="mb-8">
-            <h3
-                className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-3 pb-2 border-b"
-                style={{ color: "var(--muted)", borderColor: "var(--line)" }}
+        <div id={id} className="mb-8 scroll-mt-24">
+            <div
+                className="flex items-center gap-2 mb-3 pb-2 border-b"
+                style={{ borderColor: "var(--line)" }}
             >
-                {label}
-            </h3>
+                <span
+                    className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
+                    style={{
+                        backgroundColor: "var(--sec-accent-bg)",
+                        color: "var(--sec-accent)",
+                    }}
+                >
+                    <Icon size={12} />
+                </span>
+
+                <h3
+                    className="font-mono-cf text-xs font-bold uppercase tracking-wider"
+                    style={{ color: "var(--muted)" }}
+                >
+                    {label}
+                </h3>
+            </div>
             {children}
         </div>
     );
 }
+
+function QuickNav({ items }) {
+    return (
+        <nav
+            aria-label="Jump to a tool"
+            className="flex flex-wrap gap-1.5 mb-6"
+        >
+            {items.map(({ id, label, icon: Icon }) => (
+                <a
+                    key={id}
+                    href={`#${id}`}
+                    className="cf-pill inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono-cf"
+                    style={{
+                        borderColor: "var(--line)",
+                        color: "var(--muted)",
+                    }}
+                >
+                    <Icon size={10} />
+                    {label}
+                </a>
+            ))}
+        </nav>
+    );
+}
+
+const TOOLS = [
+    {
+        id: "st-basic-profile",
+        label: "Basic profile",
+        icon: FaFont,
+    },
+    {
+        id: "st-prefix-function",
+        label: "Prefix function (KMP)",
+        icon: FaLink,
+    },
+    {
+        id: "st-z-function",
+        label: "Z-function",
+        icon: FaStream,
+    },
+    {
+        id: "st-pattern-search",
+        label: "Pattern search",
+        icon: FaSearch,
+    },
+];
 
 function Row({ label, children }) {
     return (
@@ -117,79 +197,6 @@ function BasicProfile({ text }) {
         </div>
     );
 }
-
-// function HashCalculator({ text }) {
-//     const [base, setBase] = useState("31");
-//     const [mod, setMod] = useState("1000000007");
-
-//     const b = Number(base);
-//     const m = Number(mod);
-//     const valid =
-//         text.length > 0 &&
-//         Number.isInteger(b) &&
-//         Number.isInteger(m) &&
-//         b > 0 &&
-//         m > 0;
-//     const hash = valid ? polynomialHash(text, b, m) : null;
-
-//     return (
-//         <div>
-//             <div className="flex gap-3 flex-wrap mb-3">
-//                 <label
-//                     className="text-xs font-mono-cf"
-//                     style={{ color: "var(--muted)" }}
-//                 >
-//                     base
-//                     <input
-//                         type="text"
-//                         inputMode="numeric"
-//                         value={base}
-//                         onChange={(e) => setBase(e.target.value)}
-//                         className="block mt-1 w-32 p-2 rounded-md border font-mono-cf text-sm outline-none focus:ring-1"
-//                         style={{
-//                             borderColor: "var(--line)",
-//                             backgroundColor: "var(--bg)",
-//                             color: "var(--ink)",
-//                         }}
-//                     />
-//                 </label>
-//                 <label
-//                     className="text-xs font-mono-cf"
-//                     style={{ color: "var(--muted)" }}
-//                 >
-//                     mod
-//                     <input
-//                         type="text"
-//                         inputMode="numeric"
-//                         value={mod}
-//                         onChange={(e) => setMod(e.target.value)}
-//                         className="block mt-1 w-40 p-2 rounded-md border font-mono-cf text-sm outline-none focus:ring-1"
-//                         style={{
-//                             borderColor: "var(--line)",
-//                             backgroundColor: "var(--bg)",
-//                             color: "var(--ink)",
-//                         }}
-//                     />
-//                 </label>
-//             </div>
-//             <div
-//                 className="p-3 rounded-md border font-mono-cf text-sm"
-//                 style={{ borderColor: "var(--line)" }}
-//             >
-//                 {hash !== null ? (
-//                     <span>
-//                         <span style={{ color: "var(--muted)" }}>hash = </span>
-//                         <span className="font-bold">{hash}</span>
-//                     </span>
-//                 ) : (
-//                     <span style={{ color: "var(--muted)" }}>
-//                         Paste a string above to compute its hash.
-//                     </span>
-//                 )}
-//             </div>
-//         </div>
-//     );
-// }
 
 function PrefixFunctionDisplay({ text }) {
     if (text.length === 0) {
@@ -323,8 +330,20 @@ function StringsContent() {
     const [text, setText] = useState("");
 
     return (
-        <div>
-            <ToolBlock label="Basic profile">
+        <div
+            style={{
+                "--sec-accent": ACCENT,
+                "--sec-accent-soft": `${ACCENT}80`,
+                "--sec-accent-bg": `${ACCENT}20`,
+            }}
+        >
+            <QuickNav items={TOOLS} />
+
+            <ToolBlock
+                id="st-basic-profile"
+                icon={FaFont}
+                label="Basic profile"
+            >
                 <TextInput
                     value={text}
                     onChange={setText}
@@ -337,19 +356,23 @@ function StringsContent() {
                 )}
             </ToolBlock>
 
-            {/* <ToolBlock label="Polynomial hash">
-                <HashCalculator text={text} />
-            </ToolBlock> */}
-
-            <ToolBlock label="Prefix function (KMP)">
+            <ToolBlock
+                id="st-prefix-function"
+                icon={FaLink}
+                label="Prefix function (KMP)"
+            >
                 <PrefixFunctionDisplay text={text} />
             </ToolBlock>
 
-            <ToolBlock label="Z-function">
+            <ToolBlock id="st-z-function" icon={FaStream} label="Z-function">
                 <ZFunctionDisplay text={text} />
             </ToolBlock>
 
-            <ToolBlock label="Pattern search">
+            <ToolBlock
+                id="st-pattern-search"
+                icon={FaSearch}
+                label="Pattern search"
+            >
                 <PatternSearch />
             </ToolBlock>
         </div>

@@ -68,7 +68,6 @@ function LeftContent({ theme, toggleTheme }) {
                                 title={section.title}
                                 tag={section.tag}
                                 color={section.color}
-                                blurb={section.blurb}
                             >
                                 {section.id === "strings" ? (
                                     <StringsContent />

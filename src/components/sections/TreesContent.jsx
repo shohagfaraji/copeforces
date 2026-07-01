@@ -1,5 +1,11 @@
 import { useState } from "react";
 import {
+    FaTree,
+    FaTable,
+    FaProjectDiagram,
+    FaRulerHorizontal,
+} from "react-icons/fa";
+import {
     parseTreeInput,
     buildTreeAdjacency,
     pickRoot,
@@ -12,20 +18,85 @@ import {
 } from "../../utils/treeTools";
 import GraphCanvas from "../GraphCanvas";
 import AlgorithmRunner from "../AlgorithmRunner";
+import { sections } from "../../data/sections";
 
-function ToolBlock({ label, children }) {
+const ACCENT = sections.find((s) => s.id === "trees")?.color || "#03A89E";
+
+function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div className="mb-8">
-            <h3
-                className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-3 pb-2 border-b"
-                style={{ color: "var(--muted)", borderColor: "var(--line)" }}
+        <div id={id} className="mb-8 scroll-mt-24">
+            <div
+                className="flex items-center gap-2 mb-3 pb-2 border-b"
+                style={{ borderColor: "var(--line)" }}
             >
-                {label}
-            </h3>
+                <span
+                    className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
+                    style={{
+                        backgroundColor: "var(--sec-accent-bg)",
+                        color: "var(--sec-accent)",
+                    }}
+                >
+                    <Icon size={12} />
+                </span>
+
+                <h3
+                    className="font-mono-cf text-xs font-bold uppercase tracking-wider"
+                    style={{ color: "var(--muted)" }}
+                >
+                    {label}
+                </h3>
+            </div>
             {children}
         </div>
     );
 }
+
+function QuickNav({ items }) {
+    return (
+        <nav
+            aria-label="Jump to a tool"
+            className="flex flex-wrap gap-1.5 mb-6"
+        >
+            {items.map(({ id, label, icon: Icon }) => (
+                <a
+                    key={id}
+                    href={`#${id}`}
+                    className="cf-pill inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono-cf"
+                    style={{
+                        borderColor: "var(--line)",
+                        color: "var(--muted)",
+                    }}
+                >
+                    <Icon size={10} />
+                    {label}
+                </a>
+            ))}
+        </nav>
+    );
+}
+
+const TOOLS = [
+    {
+        id: "tr-tree-input",
+        label: "Tree input",
+        icon: FaTree,
+    },
+    {
+        id: "tr-node-stats",
+        label: "Node stats",
+        icon: FaTable,
+    },
+    {
+        id: "tr-lca",
+        label: "Lowest common ancestor",
+        icon: FaProjectDiagram,
+    },
+    {
+        id: "tr-diameter",
+        label: "Tree diameter",
+        icon: FaRulerHorizontal,
+    },
+];
 
 function StatTable({ nodes, depth, sizes, heights }) {
     return (
@@ -199,8 +270,16 @@ function TreesContent() {
     const showLcaStates = (states) => setNodeStates(states);
 
     return (
-        <div>
-            <ToolBlock label="Tree input">
+        <div
+            style={{
+                "--sec-accent": ACCENT,
+                "--sec-accent-soft": ACCENT,
+                "--sec-accent-bg": `${ACCENT}20`,
+            }}
+        >
+            <QuickNav items={TOOLS} />
+
+            <ToolBlock id="tr-tree-input" icon={FaTree} label="Tree input">
                 <div className="flex gap-4 items-start flex-wrap">
                     <textarea
                         value={treeText}
@@ -251,7 +330,11 @@ function TreesContent() {
 
             {nodes.length > 0 && (
                 <>
-                    <ToolBlock label="Node stats (depth, subtree size, subtree height)">
+                    <ToolBlock
+                        id="tr-node-stats"
+                        icon={FaTable}
+                        label="Node stats (depth, subtree size, subtree height)"
+                    >
                         <StatTable
                             nodes={nodes}
                             depth={depth}
@@ -260,7 +343,11 @@ function TreesContent() {
                         />
                     </ToolBlock>
 
-                    <ToolBlock label="Lowest common ancestor">
+                    <ToolBlock
+                        id="tr-lca"
+                        icon={FaProjectDiagram}
+                        label="Lowest common ancestor"
+                    >
                         <LcaToolWrapper
                             nodes={nodes}
                             parent={parent}
@@ -269,7 +356,11 @@ function TreesContent() {
                         />
                     </ToolBlock>
 
-                    <ToolBlock label="Tree diameter">
+                    <ToolBlock
+                        id="tr-diameter"
+                        icon={FaRulerHorizontal}
+                        label="Tree diameter"
+                    >
                         <button
                             onClick={showDiameter}
                             className="font-mono-cf text-xs px-3 py-2 rounded-md border hover:opacity-70"
