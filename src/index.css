@@ -4,6 +4,7 @@
 
 :root {
     --bg: #fafaf8;
+    --panel: #f0efe9;
     --ink: #1a1a1a;
     --muted: #6b6b6b;
     --line: #e3e1db;
@@ -15,6 +16,7 @@
 
 .dark {
     --bg: #15151a;
+    --panel: #1c1c22;
     --ink: #e8e6e0;
     --muted: #9a9690;
     --line: #2a2a30;
@@ -76,6 +78,29 @@ body {
 :focus-visible {
     outline: 2px solid var(--accent-blue);
     outline-offset: 2px;
+}
+
+.cf-tool-card {
+    transition: border-color 150ms ease;
+}
+.cf-tool-card:hover {
+    border-color: var(--cu-accent-soft, var(--line));
+}
+.cf-pill {
+    transition:
+        border-color 150ms ease,
+        color 150ms ease,
+        background-color 150ms ease;
+}
+.cf-pill:hover {
+    border-color: var(--cu-accent-soft, var(--line));
+    color: var(--cu-accent, var(--ink));
+}
+.cf-copy-hint {
+    transition: opacity 100ms ease;
+}
+.cf-pill:hover .cf-copy-hint {
+    opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
