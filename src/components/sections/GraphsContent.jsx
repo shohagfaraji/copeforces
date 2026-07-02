@@ -38,7 +38,7 @@ function ToolBlock({ id, label, icon: Icon, children }) {
 
 function GraphsContent() {
     const [edgeText, setEdgeText] = useState(
-        "1 2\n1 3\n2 4\n2 5\n3 6\n3 7\n2 3\n4 9\n4 10\n10 11",
+        "1 2\n1 3\n2 4\n2 5\n3 6\n3 7\n2 3\n4 8\n4 9\n9 10",
     );
     const [directed, setDirected] = useState(false);
     const [nodeStates, setNodeStates] = useState({});

@@ -7,13 +7,14 @@ import Footer from "./Footer";
 import { sections } from "../data/sections";
 import { useActiveSection } from "../hooks/useActiveSection";
 import { useSidebar } from "../hooks/useSidebar";
+import ContestUtilitiesContent from "./sections/ContestUtilitiesContent";
+import DebugToolsContent from "./sections/DebugToolsContent";
 import StringsContent from "./sections/StringsContent";
 import NumberTheoryContent from "./sections/NumberTheoryContent";
 import TreesContent from "./sections/TreesContent";
 import GraphsContent from "./sections/GraphsContent";
 import DynamicProgrammingContent from "./sections/DynamicProgrammingContent";
 import GreedyContent from "./sections/GreedyContent";
-import ContestUtilitiesContent from "./sections/ContestUtilitiesContent";
 
 function LeftContent({ theme, toggleTheme }) {
     const scrollRef = useRef(null);
@@ -69,7 +70,11 @@ function LeftContent({ theme, toggleTheme }) {
                                 tag={section.tag}
                                 color={section.color}
                             >
-                                {section.id === "strings" ? (
+                                {section.id === "contest-utilities" ? (
+                                    <ContestUtilitiesContent />
+                                ) : section.id === "debug-tools" ? (
+                                    <DebugToolsContent />
+                                ) : section.id === "strings" ? (
                                     <StringsContent />
                                 ) : section.id === "number-theory" ? (
                                     <NumberTheoryContent />
@@ -81,8 +86,6 @@ function LeftContent({ theme, toggleTheme }) {
                                     <DynamicProgrammingContent />
                                 ) : section.id === "greedy" ? (
                                     <GreedyContent />
-                                ) : section.id === "contest-utilities" ? (
-                                    <ContestUtilitiesContent />
                                 ) : (
                                     <p style={{ color: "var(--muted)" }}>
                                         Problems and notes go here.

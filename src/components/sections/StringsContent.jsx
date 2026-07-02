@@ -329,6 +329,8 @@ function PatternSearch() {
 function StringsContent() {
     const [text, setText] = useState("");
 
+    const hasInput = text.trim().length > 0;
+
     return (
         <div
             style={{
@@ -349,24 +351,32 @@ function StringsContent() {
                     onChange={setText}
                     placeholder="Paste a string, e.g. racecar"
                 />
-                {text.length > 0 && (
+                {hasInput && (
                     <div className="mt-4">
                         <BasicProfile text={text} />
                     </div>
                 )}
             </ToolBlock>
 
-            <ToolBlock
-                id="st-prefix-function"
-                icon={FaLink}
-                label="Prefix function (KMP)"
-            >
-                <PrefixFunctionDisplay text={text} />
-            </ToolBlock>
+            {hasInput && (
+                <>
+                    <ToolBlock
+                        id="st-prefix-function"
+                        icon={FaLink}
+                        label="Prefix function (KMP)"
+                    >
+                        <PrefixFunctionDisplay text={text} />
+                    </ToolBlock>
 
-            <ToolBlock id="st-z-function" icon={FaStream} label="Z-function">
-                <ZFunctionDisplay text={text} />
-            </ToolBlock>
+                    <ToolBlock
+                        id="st-z-function"
+                        icon={FaStream}
+                        label="Z-function"
+                    >
+                        <ZFunctionDisplay text={text} />
+                    </ToolBlock>
+                </>
+            )}
 
             <ToolBlock
                 id="st-pattern-search"
