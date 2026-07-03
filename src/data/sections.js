@@ -14,6 +14,7 @@ export const RANK_COLORS = [
 const rawSections = [
     { id: "contest-utilities", title: "Contest Utilities", tag: "CU" },
     { id: "debug-tools", title: "Debug Tools", tag: "DBG" },
+    { id: "test-generator", title: "Test Generator", tag: "GEN" },
     { id: "strings", title: "Strings", tag: "ST" },
     { id: "number-theory", title: "Number Theory", tag: "NT" },
     { id: "trees", title: "Trees", tag: "TR" },

@@ -9,6 +9,7 @@ import { useActiveSection } from "../hooks/useActiveSection";
 import { useSidebar } from "../hooks/useSidebar";
 import ContestUtilitiesContent from "./sections/ContestUtilitiesContent";
 import DebugToolsContent from "./sections/DebugToolsContent";
+import TestGeneratorContent from "./sections/TestGeneratorContent";
 import StringsContent from "./sections/StringsContent";
 import NumberTheoryContent from "./sections/NumberTheoryContent";
 import TreesContent from "./sections/TreesContent";
@@ -74,6 +75,8 @@ function LeftContent({ theme, toggleTheme }) {
                                     <ContestUtilitiesContent />
                                 ) : section.id === "debug-tools" ? (
                                     <DebugToolsContent />
+                                ) : section.id === "test-generator" ? (
+                                    <TestGeneratorContent />
                                 ) : section.id === "strings" ? (
                                     <StringsContent />
                                 ) : section.id === "number-theory" ? (
