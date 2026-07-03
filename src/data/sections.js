@@ -21,6 +21,7 @@ const rawSections = [
     { id: "graphs", title: "Graphs", tag: "GR" },
     { id: "dynamic-programming", title: "Dynamic Programming", tag: "DP" },
     { id: "greedy", title: "Greedy", tag: "GD" },
+    { id: "quick-reference", title: "Quick Reference", tag: "REF" },
 ];
 
 export const sections = rawSections.map((section, index) => ({

@@ -16,6 +16,7 @@ import TreesContent from "./sections/TreesContent";
 import GraphsContent from "./sections/GraphsContent";
 import DynamicProgrammingContent from "./sections/DynamicProgrammingContent";
 import GreedyContent from "./sections/GreedyContent";
+import QuickReferenceContent from "./sections/QuickReferenceContent";
 
 function LeftContent({ theme, toggleTheme }) {
     const scrollRef = useRef(null);
@@ -89,6 +90,8 @@ function LeftContent({ theme, toggleTheme }) {
                                     <DynamicProgrammingContent />
                                 ) : section.id === "greedy" ? (
                                     <GreedyContent />
+                                ) : section.id === "quick-reference" ? (
+                                    <QuickReferenceContent />
                                 ) : (
                                     <p style={{ color: "var(--muted)" }}>
                                         Problems and notes go here.
