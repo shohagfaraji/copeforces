@@ -3,8 +3,10 @@ import SplitLayout from "./components/SplitLayout";
 import LeftContent from "./components/LeftContent";
 import RightCanvas from "./components/RightCanvas";
 import { useTheme } from "./hooks/useTheme";
+import { useHomepageTracking } from "./hooks/useHomepageTracking";
 
 function App() {
+    useHomepageTracking();
     const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {

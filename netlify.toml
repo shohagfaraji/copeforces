@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+# SPA fallback so /stats and any other client-side path load index.html
+# (this does not affect /.netlify/functions/* — Netlify routes those first)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
