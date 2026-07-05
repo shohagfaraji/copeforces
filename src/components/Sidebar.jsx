@@ -83,7 +83,7 @@ export function MobileSidebarDrawer({ activeSection, open, onClose }) {
                     style={{ borderColor: "var(--line)" }}
                 >
                     <span className="font-semibold text-base tracking-tight">
-                        copeforces
+                        Copeforces
                     </span>
                     <button
                         onClick={onClose}

@@ -40,7 +40,7 @@ function Navbar({ theme, toggleTheme, collapsed, onToggleCollapse }) {
                 </button>
                 {!collapsed && (
                     <span className="font-semibold text-base tracking-tight truncate">
-                        copeforces
+                        Copeforces
                     </span>
                 )}
             </div>

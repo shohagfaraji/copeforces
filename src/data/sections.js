@@ -18,6 +18,7 @@ const rawSections = [
     { id: "strings", title: "Strings", tag: "ST" },
     { id: "number-theory", title: "Number Theory", tag: "NT" },
     { id: "matrix", title: "Matrix", tag: "MX" },
+    { id: "search", title: "Search", tag: "SR" },
     { id: "trees", title: "Trees", tag: "TR" },
     { id: "graphs", title: "Graphs", tag: "GR" },
     { id: "dynamic-programming", title: "Dynamic Programming", tag: "DP" },
