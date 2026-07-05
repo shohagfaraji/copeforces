@@ -12,6 +12,7 @@ import DebugToolsContent from "./sections/DebugToolsContent";
 import TestGeneratorContent from "./sections/TestGeneratorContent";
 import StringsContent from "./sections/StringsContent";
 import NumberTheoryContent from "./sections/NumberTheoryContent";
+import MatrixContent from "./sections/MatrixContent";
 import TreesContent from "./sections/TreesContent";
 import GraphsContent from "./sections/GraphsContent";
 import DynamicProgrammingContent from "./sections/DynamicProgrammingContent";
@@ -82,6 +83,8 @@ function LeftContent({ theme, toggleTheme }) {
                                     <StringsContent />
                                 ) : section.id === "number-theory" ? (
                                     <NumberTheoryContent />
+                                ) : section.id === "matrix" ? (
+                                    <MatrixContent />
                                 ) : section.id === "trees" ? (
                                     <TreesContent />
                                 ) : section.id === "graphs" ? (

@@ -17,6 +17,7 @@ const rawSections = [
     { id: "test-generator", title: "Test Generator", tag: "GEN" },
     { id: "strings", title: "Strings", tag: "ST" },
     { id: "number-theory", title: "Number Theory", tag: "NT" },
+    { id: "matrix", title: "Matrix", tag: "MX" },
     { id: "trees", title: "Trees", tag: "TR" },
     { id: "graphs", title: "Graphs", tag: "GR" },
     { id: "dynamic-programming", title: "Dynamic Programming", tag: "DP" },
