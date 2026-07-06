@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { bfsSteps, dfsSteps } from "../utils/graphTools";
 
 function AlgorithmRunner({ nodes, adj, onStateChange }) {
@@ -7,36 +7,27 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
     const [steps, setSteps] = useState([]);
     const [stepIndex, setStepIndex] = useState(-1);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [speed, setSpeed] = useState(600); // ms per step
+    const [speed, setSpeed] = useState(600);
     const intervalRef = useRef(null);
 
+    const selectedStartNode = nodes.includes(startNode)
+        ? startNode
+        : nodes[0] || "";
     const currentStep = stepIndex >= 0 ? steps[stepIndex] : null;
-    const nodeStates = {};
-    if (currentStep) {
-        currentStep.visited.forEach((n) => (nodeStates[n] = "visited"));
-        nodeStates[currentStep.visiting] = currentStep.backtrackTo
+    const nodeStates = useMemo(() => {
+        if (!currentStep) return {};
+
+        const states = {};
+        currentStep.visited.forEach((node) => {
+            states[node] = "visited";
+        });
+        states[currentStep.visiting] = currentStep.backtrackTo
             ? "backtracking"
             : "visiting";
-    }
+        return states;
+    }, [currentStep]);
 
-    useEffect(() => {
-        if (!nodes.includes(startNode)) {
-            setStartNode(nodes[0] || "");
-        }
-    }, [nodes, startNode]);
-
-    useEffect(() => {
-        return () => clearInterval(intervalRef.current);
-    }, []);
-
-    const buildSteps = () => {
-        if (!startNode) return;
-        const newSteps =
-            algorithm === "bfs"
-                ? bfsSteps(adj, startNode)
-                : dfsSteps(adj, startNode);
-        setSteps(newSteps);
-        setStepIndex(0);
+    const pause = () => {
         setIsPlaying(false);
         clearInterval(intervalRef.current);
     };
@@ -44,32 +35,29 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
     const play = () => {
         if (steps.length === 0) return;
         setIsPlaying(true);
-        clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(() => {
-            setStepIndex((prev) => {
-                if (prev >= steps.length - 1) {
-                    clearInterval(intervalRef.current);
-                    setIsPlaying(false);
-                    return prev;
-                }
-                return prev + 1;
-            });
-        }, speed);
     };
 
-    const pause = () => {
+    const buildSteps = () => {
+        if (!selectedStartNode) return;
+
+        const nextSteps =
+            algorithm === "bfs"
+                ? bfsSteps(adj, selectedStartNode)
+                : dfsSteps(adj, selectedStartNode);
+        setSteps(nextSteps);
+        setStepIndex(0);
         setIsPlaying(false);
         clearInterval(intervalRef.current);
     };
 
     const stepForward = () => {
         pause();
-        setStepIndex((prev) => Math.min(prev + 1, steps.length - 1));
+        setStepIndex((previous) => Math.min(previous + 1, steps.length - 1));
     };
 
     const stepBack = () => {
         pause();
-        setStepIndex((prev) => Math.max(prev - 1, 0));
+        setStepIndex((previous) => Math.max(previous - 1, 0));
     };
 
     const reset = () => {
@@ -77,19 +65,34 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
         setStepIndex(steps.length > 0 ? 0 : -1);
     };
 
-    // Re-apply the interval whenever speed changes mid-play, so the
-    // slider takes effect immediately instead of after the next tick.
     useEffect(() => {
-        if (isPlaying) {
-            play();
+        return () => clearInterval(intervalRef.current);
+    }, []);
+
+    useEffect(() => {
+        clearInterval(intervalRef.current);
+
+        if (!isPlaying || steps.length === 0) {
+            return undefined;
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [speed]);
+
+        intervalRef.current = setInterval(() => {
+            setStepIndex((previous) => {
+                if (previous >= steps.length - 1) {
+                    clearInterval(intervalRef.current);
+                    setIsPlaying(false);
+                    return previous;
+                }
+                return previous + 1;
+            });
+        }, speed);
+
+        return () => clearInterval(intervalRef.current);
+    }, [isPlaying, speed, steps.length]);
 
     useEffect(() => {
         onStateChange(nodeStates);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [stepIndex, steps]);
+    }, [nodeStates, onStateChange]);
 
     return (
         <div>
@@ -101,11 +104,11 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
                     Algorithm
                     <select
                         value={algorithm}
-                        onChange={(e) => setAlgorithm(e.target.value)}
+                        onChange={(event) => setAlgorithm(event.target.value)}
                         className="block w-full mt-1 p-2 rounded-md border font-mono-cf text-sm outline-none"
                         style={{
                             borderColor: "var(--line)",
-                            backgroundColor: "var(--bg)",
+                            backgroundColor: "var(--panel)",
                             color: "var(--ink)",
                         }}
                     >
@@ -120,18 +123,18 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
                 >
                     Start node
                     <select
-                        value={startNode}
-                        onChange={(e) => setStartNode(e.target.value)}
+                        value={selectedStartNode}
+                        onChange={(event) => setStartNode(event.target.value)}
                         className="block w-full mt-1 p-2 rounded-md border font-mono-cf text-sm outline-none"
                         style={{
                             borderColor: "var(--line)",
-                            backgroundColor: "var(--bg)",
+                            backgroundColor: "var(--panel)",
                             color: "var(--ink)",
                         }}
                     >
-                        {nodes.map((n) => (
-                            <option key={n} value={n}>
-                                {n}
+                        {nodes.map((node) => (
+                            <option key={node} value={node}>
+                                {node}
                             </option>
                         ))}
                     </select>
@@ -151,59 +154,46 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
 
             {steps.length > 0 && (
                 <div className="flex flex-col gap-2 mb-3">
-                    <div className="flex gap-1.5">
+                    <div className="grid grid-cols-4 gap-1.5">
                         <button
                             onClick={stepBack}
-                            className="font-mono-cf text-xs px-2 py-1.5 rounded-md border flex-1"
+                            className="font-mono-cf text-[11px] px-2 py-1.5 rounded-md border"
                             style={{
                                 borderColor: "var(--line)",
                                 color: "var(--muted)",
                             }}
                         >
-                            ◂
+                            Prev
                         </button>
-                        {isPlaying ? (
-                            <button
-                                onClick={pause}
-                                className="font-mono-cf text-xs px-2 py-1.5 rounded-md border flex-1"
-                                style={{
-                                    borderColor: "var(--line)",
-                                    color: "var(--ink)",
-                                }}
-                            >
-                                ❙❙
-                            </button>
-                        ) : (
-                            <button
-                                onClick={play}
-                                className="font-mono-cf text-xs px-2 py-1.5 rounded-md border flex-1"
-                                style={{
-                                    borderColor: "var(--line)",
-                                    color: "var(--ink)",
-                                }}
-                            >
-                                ▶
-                            </button>
-                        )}
+                        <button
+                            onClick={isPlaying ? pause : play}
+                            className="font-mono-cf text-[11px] px-2 py-1.5 rounded-md border"
+                            style={{
+                                borderColor: "var(--line)",
+                                color: "var(--ink)",
+                            }}
+                        >
+                            {isPlaying ? "Pause" : "Play"}
+                        </button>
                         <button
                             onClick={stepForward}
-                            className="font-mono-cf text-xs px-2 py-1.5 rounded-md border flex-1"
+                            className="font-mono-cf text-[11px] px-2 py-1.5 rounded-md border"
                             style={{
                                 borderColor: "var(--line)",
                                 color: "var(--muted)",
                             }}
                         >
-                            ▸
+                            Next
                         </button>
                         <button
                             onClick={reset}
-                            className="font-mono-cf text-xs px-2 py-1.5 rounded-md border flex-1"
+                            className="font-mono-cf text-[11px] px-2 py-1.5 rounded-md border"
                             style={{
                                 borderColor: "var(--line)",
                                 color: "var(--muted)",
                             }}
                         >
-                            ↺
+                            Reset
                         </button>
                     </div>
 
@@ -218,8 +208,8 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
                             max="1500"
                             step="100"
                             value={1600 - speed}
-                            onChange={(e) =>
-                                setSpeed(1600 - Number(e.target.value))
+                            onChange={(event) =>
+                                setSpeed(1600 - Number(event.target.value))
                             }
                             className="flex-1"
                         />
@@ -233,7 +223,7 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
                         {currentStep?.backtrackTo && (
                             <>
                                 {" "}
-                                · back to{" "}
+                                - back to{" "}
                                 <strong style={{ color: "var(--ink)" }}>
                                     {currentStep.visiting}
                                 </strong>
@@ -242,7 +232,7 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
                         {currentStep && !currentStep.backtrackTo && (
                             <>
                                 {" "}
-                                · at{" "}
+                                - at{" "}
                                 <strong style={{ color: "var(--ink)" }}>
                                     {currentStep.visiting}
                                 </strong>
@@ -253,12 +243,6 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
             )}
         </div>
     );
-}
-
-// A tiny pass-through so GraphsContent can read the live nodeStates
-// without prop-drilling through extra wrapper renders.
-function NodeStatesContext() {
-    return null;
 }
 
 export default AlgorithmRunner;

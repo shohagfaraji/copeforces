@@ -1,15 +1,22 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
+const DEFAULT_RIGHT_WIDTH = 40;
+const MIN_RIGHT_WIDTH = 20;
+const MAX_RIGHT_WIDTH = 80;
+const PANE_ANIMATION_MS = 420;
+const easeOutQuint = (t) => 1 - (1 - t) ** 5;
 
 function SplitLayout({ left, right }) {
     const containerRef = useRef(null);
-    const [rightWidthPercent, setRightWidthPercent] = useState(40);
+    const [rightWidthPercent, setRightWidthPercent] =
+        useState(DEFAULT_RIGHT_WIDTH);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [lastWidth, setLastWidth] = useState(40);
+    const [lastWidth, setLastWidth] = useState(DEFAULT_RIGHT_WIDTH);
     const isDraggingRef = useRef(false);
     const dragStartXRef = useRef(0);
     const movedRef = useRef(false);
+    const animationRef = useRef(null);
 
     // Drives desktop-split vs. mobile-sheet presentation. Read once on
     // mount (matchMedia, not window.innerWidth, so it's correct before
@@ -49,6 +56,9 @@ function SplitLayout({ left, right }) {
     }, []);
 
     const handleMouseDown = (e) => {
+        if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+        }
         isDraggingRef.current = true;
         dragStartXRef.current = e.clientX;
         movedRef.current = false;
@@ -58,7 +68,9 @@ function SplitLayout({ left, right }) {
         if (!isDraggingRef.current || !containerRef.current) return;
 
         const totalMove = Math.abs(e.clientX - dragStartXRef.current);
-        if (totalMove > 5) movedRef.current = true;
+        if (totalMove > 5) {
+            movedRef.current = true;
+        }
 
         const containerRect = containerRef.current.getBoundingClientRect();
         const containerWidth = containerRect.width;
@@ -66,24 +78,53 @@ function SplitLayout({ left, right }) {
 
         let newRightPercent =
             ((containerWidth - mouseX) / containerWidth) * 100;
-        newRightPercent = Math.min(80, Math.max(20, newRightPercent));
+        newRightPercent = Math.min(
+            MAX_RIGHT_WIDTH,
+            Math.max(MIN_RIGHT_WIDTH, newRightPercent),
+        );
 
         setIsCollapsed(false);
         setRightWidthPercent(newRightPercent);
+    }, []);
+
+    const animateRightPane = useCallback((from, to, onComplete) => {
+        if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+        }
+
+        const startedAt = performance.now();
+        const tick = (now) => {
+            const progress = Math.min((now - startedAt) / PANE_ANIMATION_MS, 1);
+            const nextWidth = from + (to - from) * easeOutQuint(progress);
+            setRightWidthPercent(nextWidth);
+
+            if (progress < 1) {
+                animationRef.current = requestAnimationFrame(tick);
+                return;
+            }
+
+            animationRef.current = null;
+            setRightWidthPercent(to);
+            onComplete?.();
+        };
+
+        animationRef.current = requestAnimationFrame(tick);
     }, []);
 
     const handleMouseUp = useCallback(() => {
         if (isDraggingRef.current && !movedRef.current) {
             if (isCollapsed) {
                 setIsCollapsed(false);
-                setRightWidthPercent(lastWidth);
+                animateRightPane(0, lastWidth);
             } else {
                 setLastWidth(rightWidthPercent);
-                setIsCollapsed(true);
+                animateRightPane(rightWidthPercent, 0, () => {
+                    setIsCollapsed(true);
+                });
             }
         }
         isDraggingRef.current = false;
-    }, [isCollapsed, lastWidth, rightWidthPercent]);
+    }, [animateRightPane, isCollapsed, lastWidth, rightWidthPercent]);
 
     useEffect(() => {
         window.addEventListener("mousemove", handleMouseMove);
@@ -94,7 +135,34 @@ function SplitLayout({ left, right }) {
         };
     }, [handleMouseMove, handleMouseUp]);
 
-    const rightDisplayWidth = isCollapsed ? 0 : rightWidthPercent;
+    useEffect(() => {
+        return () => {
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+            }
+        };
+    }, []);
+
+    const rightDisplayWidth = rightWidthPercent;
+
+    useEffect(() => {
+        if (!isDesktop) return;
+
+        const resizeFrame = requestAnimationFrame(() => {
+            window.dispatchEvent(new Event("resize"));
+        });
+        const resizeAfterTransition = window.setTimeout(() => {
+            window.dispatchEvent(new Event("resize"));
+        }, 440);
+
+        return () => {
+            cancelAnimationFrame(resizeFrame);
+            window.clearTimeout(resizeAfterTransition);
+        };
+    }, [isDesktop, rightDisplayWidth]);
+
+    const leftDisplayWidth = isDesktop ? 100 - rightDisplayWidth : 100;
+    const paneTransition = "none";
 
     // `left` and `right` are each mounted exactly once below, no matter
     // the breakpoint. Rendering them a second time for a "mobile copy"
@@ -105,9 +173,10 @@ function SplitLayout({ left, right }) {
     return (
         <div ref={containerRef} className="relative h-full w-full flex">
             <div
-                className="h-full"
+                className="h-full min-w-0"
                 style={{
-                    width: isDesktop ? `${100 - rightDisplayWidth}%` : "100%",
+                    width: `${leftDisplayWidth}%`,
+                    transition: isDesktop ? paneTransition : undefined,
                 }}
             >
                 {left}
@@ -116,7 +185,7 @@ function SplitLayout({ left, right }) {
             {isDesktop && (
                 <div
                     onMouseDown={handleMouseDown}
-                    className="h-full w-7 cursor-col-resize bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 flex items-center justify-center flex-shrink-0 transition-colors relative group"
+                    className="cf-split-handle h-full w-8 cursor-col-resize flex items-center justify-center flex-shrink-0 relative group"
                     title={
                         isCollapsed
                             ? "Click to open drawing board"
@@ -124,11 +193,11 @@ function SplitLayout({ left, right }) {
                     }
                 >
                     {isCollapsed ? (
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-300 tracking-wide [writing-mode:vertical-rl] rotate-180 select-none whitespace-nowrap">
+                        <span className="text-[11px] font-semibold tracking-wide [writing-mode:vertical-rl] rotate-180 select-none whitespace-nowrap">
                             Drawing board
                         </span>
                     ) : (
-                        <div className="h-12 w-1 bg-gray-400 dark:bg-gray-600 rounded-full group-hover:bg-gray-500 dark:group-hover:bg-gray-500" />
+                        <div className="cf-split-grip h-14 w-1 rounded-full" />
                     )}
                 </div>
             )}
@@ -157,13 +226,14 @@ function SplitLayout({ left, right }) {
             <div
                 className={
                     isDesktop
-                        ? "h-full overflow-hidden relative flex-shrink-0"
+                        ? "h-full overflow-hidden relative flex-shrink-0 cf-canvas-shell"
                         : `fixed inset-0 z-40 flex-col ${
                               mobileBoardOpen ? "flex" : "hidden"
                           }`
                 }
                 style={{
                     width: isDesktop ? `${rightDisplayWidth}%` : undefined,
+                    transition: isDesktop ? paneTransition : undefined,
                     backgroundColor: isDesktop ? undefined : "var(--bg)",
                 }}
             >
@@ -204,16 +274,16 @@ function SplitLayout({ left, right }) {
                 <div
                     className={
                         isDesktop
-                            ? "h-full absolute top-0 right-0"
+                            ? "h-full absolute top-0 right-0 transition-opacity duration-300 ease-out"
                             : "flex-1 overflow-hidden"
                     }
                     style={
                         isDesktop
                             ? {
-                                  width: isCollapsed ? `${lastWidth}%` : "100%",
-                                  visibility: isCollapsed
-                                      ? "hidden"
-                                      : "visible",
+                                  width: "100%",
+                                  minWidth: `${lastWidth}%`,
+                                  opacity: isCollapsed ? 0 : 1,
+                                  pointerEvents: isCollapsed ? "none" : "auto",
                               }
                             : undefined
                     }

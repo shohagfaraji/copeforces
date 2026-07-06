@@ -1,6 +1,6 @@
-import logoLight from "../assets/logo/logo-light.webp";
-import logoDark from "../assets/logo/logo-dark.webp";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
+import logoDark from "../assets/logo/logo-dark.webp";
+import logoLight from "../assets/logo/logo-light.webp";
 import { useHourlyMessage } from "../hooks/useHourlyMessage";
 
 const LINKS = [
@@ -29,6 +29,7 @@ const LINKS = [
 
 function Footer({ theme }) {
     const message = useHourlyMessage();
+
     return (
         <footer
             className="mt-10 border-t"
@@ -39,11 +40,11 @@ function Footer({ theme }) {
                     <div className="flex items-center justify-center sm:justify-start gap-3 mb-3">
                         <img
                             src={theme === "dark" ? logoDark : logoLight}
-                            alt="copeforces"
+                            alt="Copeforces"
                             className="w-9 h-9 flex-shrink-0"
                             draggable="false"
                         />
-                        <span className="font-bold text-base">copeforces</span>
+                        <span className="font-bold text-base">Copeforces</span>
                     </div>
                     <p
                         className="text-sm leading-relaxed max-w-md mx-auto sm:mx-0"
@@ -92,7 +93,8 @@ function Footer({ theme }) {
                 className="border-t py-4 text-center text-xs font-mono-cf"
                 style={{ borderColor: "var(--line)", color: "var(--muted)" }}
             >
-                © {new Date().getFullYear()} copeforces. All rights reserved.
+                Copyright {new Date().getFullYear()} Copeforces. All rights
+                reserved.
             </div>
         </footer>
     );

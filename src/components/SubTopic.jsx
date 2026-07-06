@@ -1,8 +1,8 @@
 function SubTopic({ title, children }) {
     return (
-        <div className="mb-8">
+        <div className="cf-subtopic mb-8">
             <h3
-                className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-2"
+                className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-3"
                 style={{ color: "var(--muted)" }}
             >
                 {title}

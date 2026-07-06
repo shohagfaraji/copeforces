@@ -9,7 +9,10 @@ function SectionLinks({ activeSection, collapsed, onNavigate }) {
                     <li key={section.id}>
                         <a
                             href={`#${section.id}`}
-                            onClick={onNavigate}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onNavigate?.(section.id);
+                            }}
                             title={section.title}
                             className={
                                 collapsed
@@ -45,18 +48,27 @@ function SectionLinks({ activeSection, collapsed, onNavigate }) {
     );
 }
 
-function Sidebar({ activeSection, collapsed }) {
+function Sidebar({ activeSection, collapsed, onNavigate }) {
     return (
         <nav
             className="hidden lg:block h-full flex-shrink-0 border-r py-4 overflow-y-auto"
             style={{ borderColor: "var(--line)" }}
         >
-            <SectionLinks activeSection={activeSection} collapsed={collapsed} />
+            <SectionLinks
+                activeSection={activeSection}
+                collapsed={collapsed}
+                onNavigate={onNavigate}
+            />
         </nav>
     );
 }
 
-export function MobileSidebarDrawer({ activeSection, open, onClose }) {
+export function MobileSidebarDrawer({
+    activeSection,
+    open,
+    onClose,
+    onNavigate,
+}) {
     return (
         <div
             className={`lg:hidden fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}
@@ -110,7 +122,7 @@ export function MobileSidebarDrawer({ activeSection, open, onClose }) {
                     <SectionLinks
                         activeSection={activeSection}
                         collapsed={false}
-                        onNavigate={onClose}
+                        onNavigate={onNavigate}
                     />
                 </div>
             </nav>

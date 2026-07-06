@@ -1,6 +1,9 @@
 function ProblemEntry({ name, url, source, rating, note }) {
     return (
-        <div className="py-3 border-b" style={{ borderColor: "var(--line)" }}>
+        <div
+            className="cf-problem-entry rounded-lg border px-3 py-3"
+            style={{ borderColor: "var(--line)" }}
+        >
             <div className="flex items-center justify-between gap-3 flex-wrap">
                 <a
                     href={url}
@@ -12,7 +15,7 @@ function ProblemEntry({ name, url, source, rating, note }) {
                     {name}
                 </a>
                 <div
-                    className="flex items-center gap-2 font-mono-cf text-xs"
+                    className="flex items-center gap-2 font-mono-cf text-xs flex-wrap"
                     style={{ color: "var(--muted)" }}
                 >
                     <span>{source}</span>
