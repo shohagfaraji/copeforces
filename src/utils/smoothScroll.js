@@ -1,7 +1,7 @@
 export function smoothScrollTo(
     container,
     target,
-    { duration = 350, offset = 0 } = {},
+    { duration = 350, offset = 0, respectReducedMotion = true } = {},
 ) {
     if (!container || !target) return;
 
@@ -30,7 +30,10 @@ export function smoothScrollTo(
 
     const distance = targetTop - startTop;
 
-    if (prefersReducedMotion || Math.abs(distance) < 1) {
+    if (
+        (respectReducedMotion && prefersReducedMotion) ||
+        Math.abs(distance) < 1
+    ) {
         container.scrollTop = targetTop;
         return;
     }

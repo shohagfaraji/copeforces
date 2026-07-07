@@ -1041,9 +1041,9 @@ function SearchContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="cf-tool-grid">
                 {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "md:col-span-2" : ""}>
+                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
                         <ToolCard id={id} icon={icon} label={label} hint={hint}>
                             <Component />
                         </ToolCard>

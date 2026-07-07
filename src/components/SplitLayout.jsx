@@ -5,6 +5,8 @@ const DEFAULT_RIGHT_WIDTH = 40;
 const MIN_RIGHT_WIDTH = 20;
 const MAX_RIGHT_WIDTH = 80;
 const PANE_ANIMATION_MS = 420;
+const COLLAPSED_HANDLE_WIDTH_REM = 3;
+const ACTIVE_HANDLE_WIDTH_REM = 0.75;
 const easeOutQuint = (t) => 1 - (1 - t) ** 5;
 
 function SplitLayout({ left, right }) {
@@ -17,6 +19,8 @@ function SplitLayout({ left, right }) {
     const dragStartXRef = useRef(0);
     const movedRef = useRef(false);
     const animationRef = useRef(null);
+    const previousUserSelectRef = useRef("");
+    const previousCursorRef = useRef("");
 
     // Drives desktop-split vs. mobile-sheet presentation. Read once on
     // mount (matchMedia, not window.innerWidth, so it's correct before
@@ -26,7 +30,6 @@ function SplitLayout({ left, right }) {
             typeof window !== "undefined" &&
             window.matchMedia(DESKTOP_QUERY).matches,
     );
-
     // Mobile/tablet: the drawing board isn't a side pane, it's a
     // full-screen sheet opened on demand. It must never be moved with a
     // CSS transform while open: Excalidraw measures its canvas position
@@ -55,37 +58,52 @@ function SplitLayout({ left, right }) {
         return () => mq.removeEventListener("change", handle);
     }, []);
 
+    const clampRightWidth = useCallback(
+        (width) => Math.min(MAX_RIGHT_WIDTH, Math.max(MIN_RIGHT_WIDTH, width)),
+        [],
+    );
+
+    const restoreDragStyles = useCallback(() => {
+        document.body.style.userSelect = previousUserSelectRef.current;
+        document.body.style.cursor = previousCursorRef.current;
+    }, []);
+
     const handleMouseDown = (e) => {
+        e.preventDefault();
         if (animationRef.current) {
             cancelAnimationFrame(animationRef.current);
         }
+        previousUserSelectRef.current = document.body.style.userSelect;
+        previousCursorRef.current = document.body.style.cursor;
+        document.body.style.userSelect = "none";
+        document.body.style.cursor = "col-resize";
         isDraggingRef.current = true;
         dragStartXRef.current = e.clientX;
         movedRef.current = false;
     };
 
-    const handleMouseMove = useCallback((e) => {
-        if (!isDraggingRef.current || !containerRef.current) return;
+    const handleMouseMove = useCallback(
+        (e) => {
+            if (!isDraggingRef.current || !containerRef.current) return;
 
-        const totalMove = Math.abs(e.clientX - dragStartXRef.current);
-        if (totalMove > 5) {
-            movedRef.current = true;
-        }
+            const totalMove = Math.abs(e.clientX - dragStartXRef.current);
+            if (totalMove > 5) {
+                movedRef.current = true;
+            }
 
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const containerWidth = containerRect.width;
-        const mouseX = e.clientX - containerRect.left;
+            const containerRect = containerRef.current.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+            const mouseX = e.clientX - containerRect.left;
 
-        let newRightPercent =
-            ((containerWidth - mouseX) / containerWidth) * 100;
-        newRightPercent = Math.min(
-            MAX_RIGHT_WIDTH,
-            Math.max(MIN_RIGHT_WIDTH, newRightPercent),
-        );
+            let newRightPercent =
+                ((containerWidth - mouseX) / containerWidth) * 100;
+            newRightPercent = clampRightWidth(newRightPercent);
 
-        setIsCollapsed(false);
-        setRightWidthPercent(newRightPercent);
-    }, []);
+            setIsCollapsed(false);
+            setRightWidthPercent(newRightPercent);
+        },
+        [clampRightWidth],
+    );
 
     const animateRightPane = useCallback((from, to, onComplete) => {
         if (animationRef.current) {
@@ -112,10 +130,12 @@ function SplitLayout({ left, right }) {
     }, []);
 
     const handleMouseUp = useCallback(() => {
-        if (isDraggingRef.current && !movedRef.current) {
+        if (!isDraggingRef.current) return;
+
+        if (!movedRef.current) {
             if (isCollapsed) {
                 setIsCollapsed(false);
-                animateRightPane(0, lastWidth);
+                animateRightPane(0, clampRightWidth(lastWidth));
             } else {
                 setLastWidth(rightWidthPercent);
                 animateRightPane(rightWidthPercent, 0, () => {
@@ -124,7 +144,15 @@ function SplitLayout({ left, right }) {
             }
         }
         isDraggingRef.current = false;
-    }, [animateRightPane, isCollapsed, lastWidth, rightWidthPercent]);
+        restoreDragStyles();
+    }, [
+        animateRightPane,
+        clampRightWidth,
+        isCollapsed,
+        lastWidth,
+        rightWidthPercent,
+        restoreDragStyles,
+    ]);
 
     useEffect(() => {
         window.addEventListener("mousemove", handleMouseMove);
@@ -140,10 +168,14 @@ function SplitLayout({ left, right }) {
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
+            restoreDragStyles();
         };
-    }, []);
+    }, [restoreDragStyles]);
 
-    const rightDisplayWidth = rightWidthPercent;
+    const rightDisplayWidth =
+        isCollapsed || rightWidthPercent < MIN_RIGHT_WIDTH
+            ? rightWidthPercent
+            : clampRightWidth(rightWidthPercent);
 
     useEffect(() => {
         if (!isDesktop) return;
@@ -161,7 +193,10 @@ function SplitLayout({ left, right }) {
         };
     }, [isDesktop, rightDisplayWidth]);
 
-    const leftDisplayWidth = isDesktop ? 100 - rightDisplayWidth : 100;
+    const leftDisplayWidth = isDesktop
+        ? 100 - Math.min(rightDisplayWidth, DEFAULT_RIGHT_WIDTH)
+        : 100;
+    const handleLeft = isDesktop ? 100 - rightDisplayWidth : 100;
     const paneTransition = "none";
 
     // `left` and `right` are each mounted exactly once below, no matter
@@ -171,11 +206,16 @@ function SplitLayout({ left, right }) {
     // Excalidraw instance, so the desktop/mobile difference here is
     // purely CSS on shared wrappers, never a second copy of the content.
     return (
-        <div ref={containerRef} className="relative h-full w-full flex">
+        <div
+            ref={containerRef}
+            className="relative h-full w-full overflow-hidden"
+        >
             <div
                 className="h-full min-w-0"
                 style={{
                     width: `${leftDisplayWidth}%`,
+                    position: isDesktop ? "absolute" : undefined,
+                    inset: isDesktop ? "0 auto 0 0" : undefined,
                     transition: isDesktop ? paneTransition : undefined,
                 }}
             >
@@ -185,15 +225,27 @@ function SplitLayout({ left, right }) {
             {isDesktop && (
                 <div
                     onMouseDown={handleMouseDown}
-                    className="cf-split-handle h-full w-8 cursor-col-resize flex items-center justify-center flex-shrink-0 relative group"
+                    className={`cf-split-handle h-full cursor-col-resize flex items-center justify-center absolute top-0 z-30 group select-none ${
+                        isCollapsed ? "w-12" : "w-3"
+                    }`}
                     title={
                         isCollapsed
                             ? "Click to open drawing board"
                             : "Drag to resize, click to collapse"
                     }
+                    style={{
+                        left: isCollapsed
+                            ? `calc(100% - ${COLLAPSED_HANDLE_WIDTH_REM}rem)`
+                            : `calc(${handleLeft}% - ${
+                                  ACTIVE_HANDLE_WIDTH_REM / 2
+                              }rem)`,
+                    }}
                 >
                     {isCollapsed ? (
-                        <span className="text-[11px] font-semibold tracking-wide [writing-mode:vertical-rl] rotate-180 select-none whitespace-nowrap">
+                        <span
+                            className="text-[12px] font-bold uppercase tracking-[0.16em] [writing-mode:vertical-rl] rotate-180 whitespace-nowrap"
+                            style={{ color: "var(--accent-violet)" }}
+                        >
                             Drawing board
                         </span>
                     ) : (
@@ -226,7 +278,7 @@ function SplitLayout({ left, right }) {
             <div
                 className={
                     isDesktop
-                        ? "h-full overflow-hidden relative flex-shrink-0 cf-canvas-shell"
+                        ? "h-full overflow-hidden absolute top-0 right-0 z-20 cf-canvas-shell"
                         : `fixed inset-0 z-40 flex-col ${
                               mobileBoardOpen ? "flex" : "hidden"
                           }`

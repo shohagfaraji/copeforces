@@ -1,15 +1,5 @@
 import { useState } from "react";
-import {
-    FaHashtag,
-    FaDivide,
-    FaListOl,
-    FaShieldAlt,
-    FaPercentage,
-    FaSuperscript,
-    FaRandom,
-    FaMicrochip,
-    FaCalculator,
-} from "react-icons/fa";
+import { FaShieldAlt, FaSuperscript, FaMicrochip } from "react-icons/fa";
 import {
     getDivisors,
     isPrime,
@@ -36,7 +26,11 @@ const ACCENT =
 
 function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div id={id} className="mb-8 scroll-mt-24">
+        <div
+            id={id}
+            className="cf-tool-card rounded-xl border p-4 h-full"
+            style={{ borderColor: "var(--line)" }}
+        >
             <div
                 className="flex items-center gap-2 mb-3 pb-2 border-b"
                 style={{ borderColor: "var(--line)" }}
@@ -275,7 +269,7 @@ function GcdLcmResult({ numbers }) {
     );
 }
 
-function LabeledInput({ label, value, onChange }) {
+function LabeledInput({ label, value, onChange, width = "w-32" }) {
     return (
         <label
             className="text-xs font-mono-cf"
@@ -287,7 +281,7 @@ function LabeledInput({ label, value, onChange }) {
                 inputMode="numeric"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="block mt-1 w-28 p-2 rounded-md border font-mono-cf text-sm outline-none focus:ring-1"
+                className={`block mt-1 ${width} p-2 rounded-md border font-mono-cf text-sm outline-none focus:ring-1`}
                 style={{
                     borderColor: "var(--line)",
                     backgroundColor: "var(--bg)",
@@ -328,7 +322,12 @@ function ModPowCalculator() {
                     value={exponent}
                     onChange={setExponent}
                 />
-                <LabeledInput label="mod" value={mod} onChange={setMod} />
+                <LabeledInput
+                    label="mod"
+                    value={mod}
+                    onChange={setMod}
+                    width="w-36"
+                />
             </div>
 
             {hasFloatInput && (
@@ -435,64 +434,65 @@ function NumberTheoryContent() {
             }}
         >
             <QuickNav items={TOOLS} />
-
-            <ToolBlock
-                id="nt-prime-check"
-                icon={FaShieldAlt}
-                label="Prime checker"
-            >
-                <textarea
-                    value={input}
-                    onChange={handleChange}
-                    placeholder="Paste numbers separated by spaces, e.g. 12 17 100 7"
-                    rows={3}
-                    className="w-full p-3 rounded-md border font-mono-cf text-sm resize-none outline-none focus:ring-1"
-                    style={{
-                        borderColor: "var(--line)",
-                        backgroundColor: "var(--bg)",
-                        color: "var(--ink)",
-                    }}
-                />
-
-                {error && (
-                    <p
-                        className="text-xs font-mono-cf mt-1.5"
-                        style={{ color: "#c0392b" }}
-                    >
-                        ⚠ {error}
-                    </p>
-                )}
-
-                {numbers.length > 0 && (
-                    <div className="mt-4 space-y-3">
-                        {numbers.map((n, idx) => (
-                            <NumberCard key={idx} n={n} />
-                        ))}
-
-                        {numbers.length > 1 && (
-                            <GcdLcmResult numbers={numbers} />
-                        )}
-                    </div>
-                )}
-            </ToolBlock>
-
-            {numbers.length > 1 && (
+            <div className="cf-tool-grid">
                 <ToolBlock
-                    id="nt-bitwise-operations"
-                    icon={FaMicrochip}
-                    label="Bitwise operations across all numbers"
+                    id="nt-prime-check"
+                    icon={FaShieldAlt}
+                    label="Prime checker"
                 >
-                    <BitwiseResult numbers={numbers} />
-                </ToolBlock>
-            )}
+                    <textarea
+                        value={input}
+                        onChange={handleChange}
+                        placeholder="Paste numbers separated by spaces, e.g. 12 17 100 7"
+                        rows={3}
+                        className="w-full p-3 rounded-md border font-mono-cf text-sm resize-none outline-none focus:ring-1"
+                        style={{
+                            borderColor: "var(--line)",
+                            backgroundColor: "var(--bg)",
+                            color: "var(--ink)",
+                        }}
+                    />
 
-            <ToolBlock
-                id="nt-modular-exponentiation"
-                icon={FaSuperscript}
-                label="Modular exponentiation"
-            >
-                <ModPowCalculator />
-            </ToolBlock>
+                    {error && (
+                        <p
+                            className="text-xs font-mono-cf mt-1.5"
+                            style={{ color: "#c0392b" }}
+                        >
+                            ⚠ {error}
+                        </p>
+                    )}
+
+                    {numbers.length > 0 && (
+                        <div className="mt-4 space-y-3">
+                            {numbers.map((n, idx) => (
+                                <NumberCard key={idx} n={n} />
+                            ))}
+
+                            {numbers.length > 1 && (
+                                <GcdLcmResult numbers={numbers} />
+                            )}
+                        </div>
+                    )}
+                </ToolBlock>
+
+                {numbers.length > 1 && (
+                    <ToolBlock
+                        id="nt-bitwise-operations"
+                        icon={FaMicrochip}
+                        label="Bitwise operations across all numbers"
+                    >
+                        <BitwiseResult numbers={numbers} />
+                    </ToolBlock>
+                )}
+
+                <ToolBlock
+                    id="nt-modular-exponentiation"
+                    icon={FaSuperscript}
+                    label="Modular exponentiation"
+                >
+                    <ModPowCalculator />
+                </ToolBlock>
+            </div>
         </div>
     );
 }

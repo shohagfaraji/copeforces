@@ -740,7 +740,6 @@ const TOOLS = [
         label: "Random Graphs",
         icon: FaProjectDiagram,
         hint: "Generate directed/undirected graphs with constraints",
-        wide: true,
         Component: RandomGraphTool,
     },
 
@@ -765,7 +764,6 @@ const TOOLS = [
         label: "Random Queries",
         icon: FaListUl,
         hint: "Generate range, point, or update queries",
-        wide: true,
         Component: RandomQueriesTool,
     },
 
@@ -774,7 +772,6 @@ const TOOLS = [
         label: "Custom Constraints",
         icon: FaSlidersH,
         hint: "Define named variables with min/max to generate together",
-        wide: true,
         Component: CustomConstraintsTool,
     },
 ];
@@ -857,9 +854,9 @@ function TestGeneratorContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="cf-tool-grid">
                 {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "md:col-span-2" : ""}>
+                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
                         <ToolCard id={id} icon={icon} label={label} hint={hint}>
                             <Component />
                         </ToolCard>

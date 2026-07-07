@@ -736,7 +736,6 @@ const TOOLS = [
         label: "Prefix Matrix",
         icon: FaTable,
         hint: "2D prefix sums with rectangle range queries",
-        wide: true,
         Component: PrefixMatrixTool,
     },
 
@@ -745,7 +744,6 @@ const TOOLS = [
         label: "Matrix Multiplication",
         icon: FaTimes,
         hint: "Multiply two matrices, with optional modulus",
-        wide: true,
         Component: MatrixMultiplicationTool,
     },
 
@@ -754,7 +752,6 @@ const TOOLS = [
         label: "Matrix Exponentiation",
         icon: FaSuperscript,
         hint: "Fast matrix power via repeated squaring",
-        wide: true,
         Component: MatrixExponentiationTool,
     },
 
@@ -763,7 +760,6 @@ const TOOLS = [
         label: "Flood Fill",
         icon: FaFillDrip,
         hint: "4-directional flood fill from a start cell",
-        wide: true,
         Component: FloodFillTool,
     },
 
@@ -772,7 +768,6 @@ const TOOLS = [
         label: "Grid BFS",
         icon: FaRoute,
         hint: "Shortest-path distances from a start cell",
-        wide: true,
         Component: GridBFSTool,
     },
 
@@ -781,7 +776,6 @@ const TOOLS = [
         label: "Grid DFS",
         icon: FaSitemap,
         hint: "Depth-first visit order from a start cell",
-        wide: true,
         Component: GridDFSTool,
     },
 
@@ -872,9 +866,9 @@ function MatrixContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="cf-tool-grid">
                 {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "md:col-span-2" : ""}>
+                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
                         <ToolCard id={id} icon={icon} label={label} hint={hint}>
                             <Component />
                         </ToolCard>

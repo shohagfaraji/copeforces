@@ -13,7 +13,11 @@ const ACCENT = sections.find((s) => s.id === "greedy")?.color || "#FF8C00";
 
 function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div id={id} className="mb-6 scroll-mt-24">
+        <div
+            id={id}
+            className="cf-tool-card rounded-xl border p-4 h-full"
+            style={{ borderColor: "var(--line)" }}
+        >
             <div
                 className="flex items-center gap-2 mb-2 pb-1.5 border-b"
                 style={{ borderColor: "var(--line)" }}
@@ -482,38 +486,39 @@ function GreedyContent() {
             }}
         >
             <QuickNav items={TOOLS} />
+            <div className="cf-tool-grid">
+                <ToolBlock
+                    id="gd-activity-selection"
+                    icon={FaClock}
+                    label="Activity selection"
+                >
+                    <ActivitySelectionTool />
+                </ToolBlock>
 
-            <ToolBlock
-                id="gd-activity-selection"
-                icon={FaClock}
-                label="Activity selection"
-            >
-                <ActivitySelectionTool />
-            </ToolBlock>
+                <ToolBlock
+                    id="gd-fractional-knapsack"
+                    icon={FaBriefcase}
+                    label="Fractional knapsack"
+                >
+                    <FractionalKnapsackTool />
+                </ToolBlock>
 
-            <ToolBlock
-                id="gd-fractional-knapsack"
-                icon={FaBriefcase}
-                label="Fractional knapsack"
-            >
-                <FractionalKnapsackTool />
-            </ToolBlock>
+                <ToolBlock
+                    id="gd-coin-change"
+                    icon={FaCoins}
+                    label="Coin change — greedy vs optimal"
+                >
+                    <CoinChangeTool />
+                </ToolBlock>
 
-            <ToolBlock
-                id="gd-coin-change"
-                icon={FaCoins}
-                label="Coin change — greedy vs optimal"
-            >
-                <CoinChangeTool />
-            </ToolBlock>
-
-            <ToolBlock
-                id="gd-job-sequencing"
-                icon={FaTasks}
-                label="Job sequencing with deadlines"
-            >
-                <JobSequencingTool />
-            </ToolBlock>
+                <ToolBlock
+                    id="gd-job-sequencing"
+                    icon={FaTasks}
+                    label="Job sequencing with deadlines"
+                >
+                    <JobSequencingTool />
+                </ToolBlock>
+            </div>
         </div>
     );
 }

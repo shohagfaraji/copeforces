@@ -152,21 +152,87 @@ textarea {
 }
 
 .cf-tool-card {
+    container-type: inline-size;
     background: color-mix(
         in srgb,
         var(--panel) 92%,
         var(--sec-accent-bg, transparent)
     );
+    height: 100%;
+    scroll-margin-top: 0.75rem;
     box-shadow: var(--shadow-subtle);
     transition:
         border-color 180ms ease,
         box-shadow 180ms ease,
         transform 180ms ease;
 }
+
+.cf-tool-grid {
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.cf-tool-grid > .cf-tool-wide,
+.cf-tool-grid > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+}
+
+.cf-tool-grid > .cf-tool-keep-half:last-child:nth-child(odd) {
+    grid-column: auto;
+}
+
+@container (min-width: 62rem) {
+    .cf-tool-grid > .cf-tool-stack-2 {
+        grid-row: span 2;
+    }
+}
+
 .cf-tool-card:hover {
     border-color: var(--sec-accent-soft, var(--line));
     box-shadow: var(--shadow-soft);
     transform: translateY(-1px);
+}
+
+.cf-builder-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(8.5rem, 10.5rem)
+        minmax(15rem, 18rem)
+        minmax(18rem, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.cf-builder-textarea,
+.cf-builder-controls,
+.cf-builder-canvas {
+    width: 100%;
+    min-width: 0;
+}
+
+.cf-builder-canvas svg {
+    display: block;
+    max-width: 100%;
+}
+
+.cf-readable-table th,
+.cf-readable-table td {
+    overflow-wrap: anywhere;
+}
+
+@container (max-width: 58rem) {
+    .cf-builder-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@container (max-width: 34rem) {
+    .cf-tool-card {
+        padding: 0.875rem;
+    }
 }
 .cf-pill {
     background: color-mix(

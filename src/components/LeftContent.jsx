@@ -36,6 +36,8 @@ const SECTION_CONTENT = {
     "quick-reference": QuickReferenceContent,
 };
 
+const NAV_SCROLL_OFFSET = 18;
+
 function LeftContent({ theme, toggleTheme }) {
     const scrollRef = useRef(null);
     const activeSection = useActiveSection(scrollRef);
@@ -47,7 +49,12 @@ function LeftContent({ theme, toggleTheme }) {
     function handleSectionNavigate(sectionId) {
         const container = scrollRef.current;
         const target = document.getElementById(sectionId);
-        smoothScrollTo(container, target);
+        const sectionCard = target?.querySelector(".cf-section") || target;
+        smoothScrollTo(container, sectionCard, {
+            duration: 620,
+            offset: NAV_SCROLL_OFFSET,
+            respectReducedMotion: false,
+        });
     }
 
     useEffect(() => {
@@ -56,6 +63,46 @@ function LeftContent({ theme, toggleTheme }) {
 
         let ticking = false;
         const revealTopBar = () => setMobileTopBarHidden(false);
+        const handleAnchorClick = (event) => {
+            const eventTarget =
+                event.target instanceof Element
+                    ? event.target
+                    : event.target?.parentElement;
+            const link = eventTarget?.closest?.("a[href]");
+            if (
+                !link ||
+                event.defaultPrevented ||
+                event.button !== 0 ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+            ) {
+                return;
+            }
+
+            const href = link.getAttribute("href") || "";
+            if (!href.startsWith("#")) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const id = decodeURIComponent(href.slice(1));
+            const target = id ? document.getElementById(id) : null;
+            if (!target || !container.contains(target)) return;
+            const scrollTarget =
+                target.classList.contains("cf-tool-card") ||
+                target.classList.contains("cf-section")
+                    ? target
+                    : target.querySelector?.(".cf-tool-card, .cf-section") ||
+                      target;
+
+            smoothScrollTo(container, scrollTarget, {
+                duration: 620,
+                offset: NAV_SCROLL_OFFSET,
+                respectReducedMotion: false,
+            });
+        };
 
         const handleScroll = () => {
             if (ticking) return;
@@ -78,12 +125,14 @@ function LeftContent({ theme, toggleTheme }) {
         };
 
         container.addEventListener("scroll", handleScroll, { passive: true });
+        container.addEventListener("click", handleAnchorClick, true);
         window.addEventListener("focus", revealTopBar);
         window.addEventListener("pageshow", revealTopBar);
         document.addEventListener("visibilitychange", revealTopBar);
 
         return () => {
             container.removeEventListener("scroll", handleScroll);
+            container.removeEventListener("click", handleAnchorClick, true);
             window.removeEventListener("focus", revealTopBar);
             window.removeEventListener("pageshow", revealTopBar);
             document.removeEventListener("visibilitychange", revealTopBar);

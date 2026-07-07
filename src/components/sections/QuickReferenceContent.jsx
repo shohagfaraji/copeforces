@@ -127,6 +127,7 @@ const REFERENCE_TOOLS = [
         label: "Bit Tricks",
         icon: FaMicrochip,
         hint: "Common bitwise idioms",
+        layoutClass: "cf-tool-stack-2",
         formulas: [
             {
                 name: "Check power of 2",
@@ -163,23 +164,6 @@ const REFERENCE_TOOLS = [
         ],
     },
     {
-        id: "ref-common-limits",
-        label: "Common Limits",
-        icon: FaRulerCombined,
-        hint: "Typical time/memory/constraint limits",
-        wide: true,
-        columns: ["Limit", "Typical Value"],
-        rows: [
-            ["Time limit", "1 - 2 seconds"],
-            ["Memory limit", "256 MB"],
-            ["Default recursion depth", "~10^4 - 10^5 (judge-dependent)"],
-            ["Static int array before MLE (256MB)", "~6x10^7 elements"],
-            ["n <= 10^5 - 10^6", "expect O(n log n)"],
-            ["n <= 10^3 - 10^4", "expect O(n^2)"],
-            ["n <= 20", "expect O(2^n)"],
-        ],
-    },
-    {
         id: "ref-eps-values",
         label: "Floating EPS Values",
         icon: FaDotCircle,
@@ -192,6 +176,22 @@ const REFERENCE_TOOLS = [
                 formula: "~15 - 17 significant digits",
             },
             { name: "Safe comparison", formula: "fabs(a - b) < EPS" },
+        ],
+    },
+    {
+        id: "ref-common-limits",
+        label: "Common Limits",
+        icon: FaRulerCombined,
+        hint: "Typical time/memory/constraint limits",
+        columns: ["Limit", "Typical Value"],
+        rows: [
+            ["Time limit", "1 - 2 seconds"],
+            ["Memory limit", "256 MB"],
+            ["Default recursion depth", "~10^4 - 10^5 (judge-dependent)"],
+            ["Static int array before MLE (256MB)", "~6x10^7 elements"],
+            ["n <= 10^5 - 10^6", "expect O(n log n)"],
+            ["n <= 10^3 - 10^4", "expect O(n^2)"],
+            ["n <= 20", "expect O(2^n)"],
         ],
     },
     {
@@ -254,7 +254,7 @@ function RefTable({ columns, rows }) {
             className="overflow-x-auto rounded-lg border"
             style={{ borderColor: "var(--line)" }}
         >
-            <table className="w-full text-xs font-mono-cf">
+            <table className="cf-readable-table w-full text-xs font-mono-cf">
                 <thead>
                     <tr style={{ borderBottom: "1px solid var(--line)" }}>
                         {columns.map((column) => (
@@ -282,7 +282,7 @@ function RefTable({ columns, rows }) {
                             {row.map((cell, cellIndex) => (
                                 <td
                                     key={cellIndex}
-                                    className="px-3 py-2 align-top whitespace-nowrap"
+                                    className="px-3 py-2 align-top"
                                 >
                                     {cell}
                                 </td>
@@ -411,11 +411,16 @@ function QuickReferenceContent() {
         >
             <QuickNav tools={REFERENCE_TOOLS} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="cf-tool-grid">
                 {REFERENCE_TOOLS.map((tool) => (
                     <div
                         key={tool.id}
-                        className={tool.wide ? "md:col-span-2" : ""}
+                        className={[
+                            tool.wide ? "cf-tool-wide" : "",
+                            tool.layoutClass || "",
+                        ]
+                            .filter(Boolean)
+                            .join(" ")}
                     >
                         <ToolCard {...tool} />
                     </div>

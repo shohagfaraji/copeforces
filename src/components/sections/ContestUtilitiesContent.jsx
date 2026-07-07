@@ -562,7 +562,7 @@ function CharacterTableTool() {
                 label="text (≤ 40 chars)"
                 value={text}
                 onChange={setText}
-                width="w-full sm:w-64"
+                width="w-full sm:w-80"
             />
             <div className="flex gap-1.5 flex-wrap mt-3">
                 {chars.map((ch, i) => (
@@ -844,8 +844,8 @@ function OverflowCheckerTool() {
 
             <div>
                 <div className="flex gap-3 flex-wrap">
-                    <Field label="a ×" value={a} onChange={setA} width="w-24" />
-                    <Field label="b" value={b} onChange={setB} width="w-24" />
+                    <Field label="a ×" value={a} onChange={setA} width="w-32" />
+                    <Field label="b" value={b} onChange={setB} width="w-32" />
                 </div>
                 {validMul && (
                     <div className="flex flex-wrap items-center gap-2 mt-2 text-xs font-mono-cf">
@@ -896,8 +896,8 @@ function FloatPrecisionTool() {
     return (
         <div className="space-y-3">
             <div className="flex gap-3 flex-wrap">
-                <Field label="a" value={a} onChange={setA} width="w-24" />
-                <Field label="b" value={b} onChange={setB} width="w-24" />
+                <Field label="a" value={a} onChange={setA} width="w-32" />
+                <Field label="b" value={b} onChange={setB} width="w-32" />
             </div>
             {valid && comparison && (
                 <OutputPanel
@@ -1005,9 +1005,9 @@ function ContestUtilitiesContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="cf-tool-grid">
                 {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "lg:col-span-2" : ""}>
+                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
                         <ToolCard id={id} icon={icon} label={label} hint={hint}>
                             <Component />
                         </ToolCard>

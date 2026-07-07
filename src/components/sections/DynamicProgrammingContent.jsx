@@ -11,9 +11,15 @@ import { sections } from "../../data/sections";
 const ACCENT =
     sections.find((s) => s.id === "dynamic-programming")?.color || "#AA00AA";
 
-function ToolBlock({ id, label, icon: Icon, children }) {
+function ToolBlock({ id, label, icon: Icon, children, wide = false }) {
     return (
-        <div id={id} className="mb-6 scroll-mt-24">
+        <div
+            id={id}
+            className={`cf-tool-card rounded-xl border p-4 h-full ${
+                wide ? "cf-tool-wide" : ""
+            }`}
+            style={{ borderColor: "var(--line)" }}
+        >
             <div
                 className="flex items-center gap-2 mb-2 pb-1.5 border-b"
                 style={{ borderColor: "var(--line)" }}
@@ -87,14 +93,16 @@ const TOOLS = [
     },
 ];
 
-function TextArea({ value, onChange, placeholder, rows = 4 }) {
+function TextArea({ value, onChange, placeholder, rows = 4, wide = false }) {
     return (
         <textarea
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             rows={rows}
-            className="w-full sm:w-48 p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
+            className={`w-full p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1 ${
+                wide ? "" : "sm:w-48"
+            }`}
             style={{
                 borderColor: "var(--line)",
                 backgroundColor: "var(--bg)",
@@ -379,7 +387,7 @@ function MinCoinChangeTool() {
                         type="text"
                         value={coins}
                         onChange={(e) => setCoins(e.target.value)}
-                        className="block mt-1 w-32 p-1.5 rounded-md border font-mono-cf text-xs outline-none focus:ring-1"
+                        className="block mt-1 w-48 p-1.5 rounded-md border font-mono-cf text-xs outline-none focus:ring-1"
                         style={{
                             borderColor: "var(--line)",
                             backgroundColor: "var(--bg)",
@@ -397,7 +405,7 @@ function MinCoinChangeTool() {
                         inputMode="numeric"
                         value={target}
                         onChange={(e) => setTarget(e.target.value)}
-                        className="block mt-1 w-20 p-1.5 rounded-md border font-mono-cf text-xs outline-none focus:ring-1"
+                        className="block mt-1 w-28 p-1.5 rounded-md border font-mono-cf text-xs outline-none focus:ring-1"
                         style={{
                             borderColor: "var(--line)",
                             backgroundColor: "var(--bg)",
@@ -480,9 +488,9 @@ function LisTool() {
     const highlightedIdx = new Set(indices);
 
     return (
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="space-y-4">
             <label
-                className="text-xs font-mono-cf flex-shrink-0"
+                className="block text-xs font-mono-cf"
                 style={{ color: "var(--muted)" }}
             >
                 <span className="block mb-1">sequence (≤ 20 numbers):</span>
@@ -490,13 +498,14 @@ function LisTool() {
                     value={text}
                     onChange={setText}
                     placeholder={"10 9 2 5 3 7 101 18"}
-                    rows={3}
+                    rows={4}
+                    wide
                 />
             </label>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0">
                 {nums.length > 0 && (
                     <>
-                        <div className="flex gap-2 flex-wrap sm:mt-5">
+                        <div className="flex gap-2 flex-wrap">
                             {nums.map((n, i) => (
                                 <div
                                     key={i}
@@ -552,34 +561,43 @@ function DynamicProgrammingContent() {
             }}
         >
             <QuickNav items={TOOLS} />
+            <div className="cf-tool-grid">
+                <ToolBlock
+                    id="dp-knapsack"
+                    icon={FaBriefcase}
+                    label="0/1 knapsack"
+                    wide
+                >
+                    <KnapsackTool />
+                </ToolBlock>
 
-            <ToolBlock id="dp-knapsack" icon={FaBriefcase} label="0/1 knapsack">
-                <KnapsackTool />
-            </ToolBlock>
+                <ToolBlock
+                    id="dp-lcs"
+                    icon={FaLink}
+                    label="Longest common subsequence"
+                    wide
+                >
+                    <LcsTool />
+                </ToolBlock>
 
-            <ToolBlock
-                id="dp-lcs"
-                icon={FaLink}
-                label="Longest common subsequence"
-            >
-                <LcsTool />
-            </ToolBlock>
+                <ToolBlock
+                    id="dp-coin-change"
+                    icon={FaCoins}
+                    label="Coin change — minimum coins (DP)"
+                    wide
+                >
+                    <MinCoinChangeTool />
+                </ToolBlock>
 
-            <ToolBlock
-                id="dp-coin-change"
-                icon={FaCoins}
-                label="Coin change — minimum coins (DP)"
-            >
-                <MinCoinChangeTool />
-            </ToolBlock>
-
-            <ToolBlock
-                id="dp-lis"
-                icon={FaChartLine}
-                label="Longest increasing subsequence"
-            >
-                <LisTool />
-            </ToolBlock>
+                <ToolBlock
+                    id="dp-lis"
+                    icon={FaChartLine}
+                    label="Longest increasing subsequence"
+                    wide
+                >
+                    <LisTool />
+                </ToolBlock>
+            </div>
         </div>
     );
 }

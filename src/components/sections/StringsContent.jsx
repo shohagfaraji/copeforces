@@ -29,7 +29,11 @@ function hexToRgba(hex, alpha) {
 
 function ToolBlock({ id, label, icon: Icon, children }) {
     return (
-        <div id={id} className="mb-8 scroll-mt-24">
+        <div
+            id={id}
+            className="cf-tool-card rounded-xl border p-4 h-full"
+            style={{ borderColor: "var(--line)" }}
+        >
             <div
                 className="flex items-center gap-2 mb-3 pb-2 border-b"
                 style={{ borderColor: "var(--line)" }}
@@ -340,51 +344,52 @@ function StringsContent() {
             }}
         >
             <QuickNav items={TOOLS} />
+            <div className="cf-tool-grid">
+                <ToolBlock
+                    id="st-basic-profile"
+                    icon={FaFont}
+                    label="Basic profile"
+                >
+                    <TextInput
+                        value={text}
+                        onChange={setText}
+                        placeholder="Paste a string, e.g. racecar"
+                    />
+                    {hasInput && (
+                        <div className="mt-4">
+                            <BasicProfile text={text} />
+                        </div>
+                    )}
+                </ToolBlock>
 
-            <ToolBlock
-                id="st-basic-profile"
-                icon={FaFont}
-                label="Basic profile"
-            >
-                <TextInput
-                    value={text}
-                    onChange={setText}
-                    placeholder="Paste a string, e.g. racecar"
-                />
                 {hasInput && (
-                    <div className="mt-4">
-                        <BasicProfile text={text} />
-                    </div>
+                    <>
+                        <ToolBlock
+                            id="st-prefix-function"
+                            icon={FaLink}
+                            label="Prefix function (KMP)"
+                        >
+                            <PrefixFunctionDisplay text={text} />
+                        </ToolBlock>
+
+                        <ToolBlock
+                            id="st-z-function"
+                            icon={FaStream}
+                            label="Z-function"
+                        >
+                            <ZFunctionDisplay text={text} />
+                        </ToolBlock>
+                    </>
                 )}
-            </ToolBlock>
 
-            {hasInput && (
-                <>
-                    <ToolBlock
-                        id="st-prefix-function"
-                        icon={FaLink}
-                        label="Prefix function (KMP)"
-                    >
-                        <PrefixFunctionDisplay text={text} />
-                    </ToolBlock>
-
-                    <ToolBlock
-                        id="st-z-function"
-                        icon={FaStream}
-                        label="Z-function"
-                    >
-                        <ZFunctionDisplay text={text} />
-                    </ToolBlock>
-                </>
-            )}
-
-            <ToolBlock
-                id="st-pattern-search"
-                icon={FaSearch}
-                label="Pattern search"
-            >
-                <PatternSearch />
-            </ToolBlock>
+                <ToolBlock
+                    id="st-pattern-search"
+                    icon={FaSearch}
+                    label="Pattern search"
+                >
+                    <PatternSearch />
+                </ToolBlock>
+            </div>
         </div>
     );
 }
