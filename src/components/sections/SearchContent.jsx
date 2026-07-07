@@ -43,7 +43,9 @@ function CopyButton({ value }) {
             setCopied(true);
 
             setTimeout(() => setCopied(false), 1200);
-        } catch {}
+        } catch {
+            setCopied(false);
+        }
     }
 
     return (
@@ -430,7 +432,7 @@ function SearchVisualizerTool() {
             ) : (
                 <>
                     <div className="overflow-x-auto">
-                        <div className="inline-flex gap-1.5 pb-2">
+                        <div className="inline-flex gap-2 pb-3">
                             {arr.map((value, idx) => {
                                 const isMid = current.mid === idx;
                                 const outOfRange =
@@ -439,10 +441,10 @@ function SearchVisualizerTool() {
                                 return (
                                     <div
                                         key={idx}
-                                        className="flex flex-col items-center gap-1"
+                                        className="flex flex-col items-center gap-1.5"
                                     >
                                         <div
-                                            className="h-3 text-[10px] font-mono-cf leading-none"
+                                            className="min-h-4 text-[11px] font-mono-cf leading-4"
                                             style={{
                                                 color: "var(--sec-accent)",
                                             }}
@@ -457,7 +459,7 @@ function SearchVisualizerTool() {
                                         </div>
 
                                         <div
-                                            className="w-9 h-9 rounded-md border flex items-center justify-center text-xs font-mono-cf flex-shrink-0"
+                                            className="w-10 h-10 rounded-md border flex items-center justify-center px-1 text-sm font-mono-cf flex-shrink-0"
                                             style={{
                                                 borderColor: isMid
                                                     ? "var(--sec-accent)"
@@ -475,7 +477,7 @@ function SearchVisualizerTool() {
                                         </div>
 
                                         <div
-                                            className="text-[10px] font-mono-cf leading-none"
+                                            className="min-h-4 text-[11px] font-mono-cf leading-4"
                                             style={{ color: "var(--muted)" }}
                                         >
                                             {idx}

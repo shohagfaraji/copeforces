@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "./Navbar";
 import MobileTopBar from "./MobileTopBar";
 import { smoothScrollTo } from "../utils/smoothScroll";
@@ -40,6 +40,8 @@ function LeftContent({ theme, toggleTheme }) {
     const scrollRef = useRef(null);
     const activeSection = useActiveSection(scrollRef);
     const { collapsed, mobileOpen, toggle, closeMobile } = useSidebar();
+    const [mobileTopBarHidden, setMobileTopBarHidden] = useState(false);
+    const lastScrollTopRef = useRef(0);
 
     const activeMeta = sections.find((s) => s.id === activeSection);
     function handleSectionNavigate(sectionId) {
@@ -47,6 +49,47 @@ function LeftContent({ theme, toggleTheme }) {
         const target = document.getElementById(sectionId);
         smoothScrollTo(container, target);
     }
+
+    useEffect(() => {
+        const container = scrollRef.current;
+        if (!container) return undefined;
+
+        let ticking = false;
+        const revealTopBar = () => setMobileTopBarHidden(false);
+
+        const handleScroll = () => {
+            if (ticking) return;
+
+            ticking = true;
+            requestAnimationFrame(() => {
+                const currentScrollTop = container.scrollTop;
+                const previousScrollTop = lastScrollTopRef.current;
+                const delta = currentScrollTop - previousScrollTop;
+
+                if (currentScrollTop <= 8 || delta < -6) {
+                    setMobileTopBarHidden(false);
+                } else if (delta > 8 && currentScrollTop > 56) {
+                    setMobileTopBarHidden(true);
+                }
+
+                lastScrollTopRef.current = Math.max(currentScrollTop, 0);
+                ticking = false;
+            });
+        };
+
+        container.addEventListener("scroll", handleScroll, { passive: true });
+        window.addEventListener("focus", revealTopBar);
+        window.addEventListener("pageshow", revealTopBar);
+        document.addEventListener("visibilitychange", revealTopBar);
+
+        return () => {
+            container.removeEventListener("scroll", handleScroll);
+            window.removeEventListener("focus", revealTopBar);
+            window.removeEventListener("pageshow", revealTopBar);
+            document.removeEventListener("visibilitychange", revealTopBar);
+        };
+    }, []);
+
     const railWidth = collapsed
         ? "var(--rail-w-collapsed)"
         : "var(--rail-w-expanded)";
@@ -61,6 +104,7 @@ function LeftContent({ theme, toggleTheme }) {
                 toggleTheme={toggleTheme}
                 onOpenMenu={toggle}
                 activeMeta={activeMeta}
+                hidden={mobileTopBarHidden}
             />
             <MobileSidebarDrawer
                 activeSection={activeSection}

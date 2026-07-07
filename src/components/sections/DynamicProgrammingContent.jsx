@@ -496,11 +496,11 @@ function LisTool() {
             <div className="flex-1 min-w-0">
                 {nums.length > 0 && (
                     <>
-                        <div className="flex gap-1.5 flex-wrap sm:mt-5">
+                        <div className="flex gap-2 flex-wrap sm:mt-5">
                             {nums.map((n, i) => (
                                 <div
                                     key={i}
-                                    className="w-11 h-11 rounded-md border flex flex-col items-center justify-center text-xs font-mono-cf flex-shrink-0"
+                                    className="min-w-14 min-h-14 rounded-md border flex flex-col items-center justify-center gap-1 px-2 py-2 text-sm font-mono-cf leading-tight flex-shrink-0"
                                     style={{
                                         borderColor: "var(--line)",
                                         backgroundColor: highlightedIdx.has(i)
@@ -513,7 +513,7 @@ function LisTool() {
                                 >
                                     <span className="font-bold">{n}</span>
                                     <span
-                                        className="text-[10px]"
+                                        className="text-xs"
                                         style={{
                                             color: highlightedIdx.has(i)
                                                 ? "inherit"

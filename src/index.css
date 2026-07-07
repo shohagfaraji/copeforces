@@ -118,6 +118,28 @@ textarea {
     border-color: var(--line);
 }
 
+.cf-section .text-sm {
+    font-size: 1rem;
+    line-height: 1.65rem;
+}
+
+.cf-section .text-xs,
+.cf-section .text-\[11px\],
+.cf-section .text-\[10px\],
+.cf-section .text-\[9px\] {
+    font-size: 0.875rem;
+    line-height: 1.35rem;
+}
+
+.cf-section table,
+.cf-section pre,
+.cf-section textarea,
+.cf-section input,
+.cf-section select {
+    font-size: 0.875rem;
+    line-height: 1.45rem;
+}
+
 .cf-section-tag {
     background: var(--sec-accent-bg);
     border-color: var(--sec-accent-soft);

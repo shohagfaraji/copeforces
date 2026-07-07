@@ -1,11 +1,21 @@
 import logoLight from "../assets/logo/logo-light.webp";
 import logoDark from "../assets/logo/logo-dark.webp";
 
-function MobileTopBar({ theme, toggleTheme, onOpenMenu, activeMeta }) {
+function MobileTopBar({
+    theme,
+    toggleTheme,
+    onOpenMenu,
+    activeMeta,
+    hidden = false,
+}) {
     return (
         <header
-            className="lg:hidden h-14 flex items-center justify-between gap-2 px-3 border-b flex-shrink-0"
-            style={{ borderColor: "var(--line)" }}
+            className={`lg:hidden flex items-center justify-between gap-2 overflow-hidden border-b px-3 flex-shrink-0 transition-[height,transform,opacity,border-color] duration-300 ease-out ${
+                hidden
+                    ? "h-0 -translate-y-full opacity-0 pointer-events-none"
+                    : "h-14 translate-y-0 opacity-100"
+            }`}
+            style={{ borderColor: hidden ? "transparent" : "var(--line)" }}
         >
             <button
                 onClick={onOpenMenu}
