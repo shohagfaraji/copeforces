@@ -19,6 +19,9 @@ function SplitLayout({ left, right }) {
     const dragStartXRef = useRef(0);
     const movedRef = useRef(false);
     const animationRef = useRef(null);
+    const isCollapsedRef = useRef(isCollapsed);
+    const rightWidthRef = useRef(rightWidthPercent);
+    const lastWidthRef = useRef(lastWidth);
     const previousUserSelectRef = useRef("");
     const previousCursorRef = useRef("");
 
@@ -63,6 +66,18 @@ function SplitLayout({ left, right }) {
         [],
     );
 
+    useEffect(() => {
+        isCollapsedRef.current = isCollapsed;
+    }, [isCollapsed]);
+
+    useEffect(() => {
+        rightWidthRef.current = rightWidthPercent;
+    }, [rightWidthPercent]);
+
+    useEffect(() => {
+        lastWidthRef.current = lastWidth;
+    }, [lastWidth]);
+
     const restoreDragStyles = useCallback(() => {
         document.body.style.userSelect = previousUserSelectRef.current;
         document.body.style.cursor = previousCursorRef.current;
@@ -100,7 +115,9 @@ function SplitLayout({ left, right }) {
             newRightPercent = clampRightWidth(newRightPercent);
 
             setIsCollapsed(false);
+            isCollapsedRef.current = false;
             setRightWidthPercent(newRightPercent);
+            rightWidthRef.current = newRightPercent;
         },
         [clampRightWidth],
     );
@@ -115,6 +132,7 @@ function SplitLayout({ left, right }) {
             const progress = Math.min((now - startedAt) / PANE_ANIMATION_MS, 1);
             const nextWidth = from + (to - from) * easeOutQuint(progress);
             setRightWidthPercent(nextWidth);
+            rightWidthRef.current = nextWidth;
 
             if (progress < 1) {
                 animationRef.current = requestAnimationFrame(tick);
@@ -123,36 +141,52 @@ function SplitLayout({ left, right }) {
 
             animationRef.current = null;
             setRightWidthPercent(to);
+            rightWidthRef.current = to;
             onComplete?.();
         };
 
         animationRef.current = requestAnimationFrame(tick);
     }, []);
 
+    const toggleDesktopPane = useCallback(() => {
+        if (movedRef.current) {
+            movedRef.current = false;
+            return;
+        }
+
+        if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+            animationRef.current = null;
+        }
+
+        if (isCollapsedRef.current) {
+            const targetWidth = clampRightWidth(lastWidthRef.current);
+            isCollapsedRef.current = false;
+            setIsCollapsed(false);
+            setLastWidth(targetWidth);
+            lastWidthRef.current = targetWidth;
+            animateRightPane(rightWidthRef.current, targetWidth, () => {
+                isCollapsedRef.current = false;
+                setIsCollapsed(false);
+            });
+            return;
+        }
+
+        const currentWidth = clampRightWidth(rightWidthRef.current);
+        setLastWidth(currentWidth);
+        lastWidthRef.current = currentWidth;
+        animateRightPane(rightWidthRef.current, 0, () => {
+            isCollapsedRef.current = true;
+            setIsCollapsed(true);
+        });
+    }, [animateRightPane, clampRightWidth]);
+
     const handleMouseUp = useCallback(() => {
         if (!isDraggingRef.current) return;
 
-        if (!movedRef.current) {
-            if (isCollapsed) {
-                setIsCollapsed(false);
-                animateRightPane(0, clampRightWidth(lastWidth));
-            } else {
-                setLastWidth(rightWidthPercent);
-                animateRightPane(rightWidthPercent, 0, () => {
-                    setIsCollapsed(true);
-                });
-            }
-        }
         isDraggingRef.current = false;
         restoreDragStyles();
-    }, [
-        animateRightPane,
-        clampRightWidth,
-        isCollapsed,
-        lastWidth,
-        rightWidthPercent,
-        restoreDragStyles,
-    ]);
+    }, [restoreDragStyles]);
 
     useEffect(() => {
         window.addEventListener("mousemove", handleMouseMove);
@@ -225,6 +259,7 @@ function SplitLayout({ left, right }) {
             {isDesktop && (
                 <div
                     onMouseDown={handleMouseDown}
+                    onClick={toggleDesktopPane}
                     className={`cf-split-handle h-full cursor-col-resize flex items-center justify-center absolute top-0 z-30 group select-none ${
                         isCollapsed ? "w-12" : "w-3"
                     }`}

@@ -5,6 +5,7 @@ import {
     bigIntCalculate,
     convertBase,
     evaluateExpression,
+    fastCalculate,
 } from "../src/utils/contestTools.js";
 import {
     knapsack01,
@@ -119,6 +120,46 @@ test("contest utilities handle signed, exact, and invalid inputs", () => {
     assert.equal(evaluateExpression("2 * -3").result, -6);
     assert.equal(evaluateExpression("-(2 + 3)").result, -5);
     assert.equal(evaluateExpression("1..2").error, "invalid expression");
+    const fastHuge = fastCalculate(
+        "9223372036854775808",
+        "9223372036854775808",
+    );
+    assert.equal(fastHuge.exact, true);
+    assert.equal(
+        fastHuge.ops.find((op) => op.label === "a × b").value,
+        "85070591730234615865843651857942052864",
+    );
+    assert.equal(
+        fastHuge.ops.find((op) => op.label === "a + b").value,
+        "18446744073709551616",
+    );
+    assert.equal(fastHuge.ops.find((op) => op.label === "a ÷ b").value, "1");
+    assert.equal(fastHuge.ops.find((op) => op.label === "a mod b").value, "0");
+    const fastDifferentHuge = fastCalculate(
+        "9223372036854775808",
+        "9223372036854775809",
+    );
+    assert.equal(
+        fastDifferentHuge.ops.find((op) => op.label === "a + b").value,
+        "18446744073709551617",
+    );
+    assert.equal(
+        fastDifferentHuge.ops.find((op) => op.label === "a × b").value,
+        "85070591730234615875067023894796828672",
+    );
+    const fastDecimalHuge = fastCalculate("100000000000000000000.25", "0.75");
+    assert.equal(
+        fastDecimalHuge.ops.find((op) => op.label === "a + b").value,
+        "100000000000000000001",
+    );
+    assert.equal(
+        fastCalculate("1e20", "2").ops.find((op) => op.label === "a × b").value,
+        "200000000000000000000",
+    );
+    assert.equal(
+        fastCalculate("17", "5").ops.find((op) => op.label === "a ÷ b").value,
+        "3.4",
+    );
     assert.equal(
         binaryCalculate("1".repeat(64), "1", "A+B").result,
         `1${"0".repeat(64)}`,

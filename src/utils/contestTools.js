@@ -55,6 +55,7 @@ export function toRoman(num) {
 }
 
 const ROMAN_VALUES = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+const DECIMAL_INPUT_RE = /^[+-]?(?:(?:\d+\.?\d*)|(?:\.\d+))(?:e[+-]?\d+)?$/i;
 
 export function fromRoman(str) {
     const s = str.trim().toUpperCase();
@@ -219,6 +220,186 @@ export function evaluateExpression(expr) {
 
     if (evalStack.length !== 1) return { error: "invalid expression" };
     return { result: evalStack[0] };
+}
+
+function pow10(exp) {
+    return 10n ** BigInt(exp);
+}
+
+function parseExactDecimal(value) {
+    const clean = value.trim();
+    if (!DECIMAL_INPUT_RE.test(clean)) return null;
+
+    const sign = clean.startsWith("-") ? -1n : 1n;
+    const unsigned = clean.replace(/^[+-]/, "");
+    const [mantissa, exponentPart = "0"] = unsigned.toLowerCase().split("e");
+    const exponent = Number(exponentPart);
+    if (!Number.isSafeInteger(exponent) || Math.abs(exponent) > 10000) {
+        return null;
+    }
+
+    const [whole = "", fraction = ""] = mantissa.split(".");
+    const digits = `${whole}${fraction}`.replace(/^0+(?=\d)/, "") || "0";
+    const rawScale = fraction.length - exponent;
+
+    if (rawScale <= 0) {
+        return {
+            int: sign * BigInt(digits) * pow10(-rawScale),
+            scale: 0,
+        };
+    }
+
+    return {
+        int: sign * BigInt(digits),
+        scale: rawScale,
+    };
+}
+
+function normalizeExactDecimal(value) {
+    let { int, scale } = value;
+    while (scale > 0 && int % 10n === 0n) {
+        int /= 10n;
+        scale--;
+    }
+    return { int, scale };
+}
+
+function formatExactDecimal(value) {
+    const normalized = normalizeExactDecimal(value);
+    const negative = normalized.int < 0n;
+    const digits = (negative ? -normalized.int : normalized.int).toString();
+
+    if (normalized.scale === 0) {
+        return `${negative ? "-" : ""}${digits}`;
+    }
+
+    const padded = digits.padStart(normalized.scale + 1, "0");
+    const splitAt = padded.length - normalized.scale;
+    const whole = padded.slice(0, splitAt);
+    const fraction = padded.slice(splitAt).replace(/0+$/, "");
+
+    return `${negative ? "-" : ""}${whole}${fraction ? `.${fraction}` : ""}`;
+}
+
+function alignExactDecimals(a, b) {
+    const scale = Math.max(a.scale, b.scale);
+    return {
+        aInt: a.int * pow10(scale - a.scale),
+        bInt: b.int * pow10(scale - b.scale),
+        scale,
+    };
+}
+
+function addExactDecimals(a, b) {
+    const { aInt, bInt, scale } = alignExactDecimals(a, b);
+    return { int: aInt + bInt, scale };
+}
+
+function subtractExactDecimals(a, b) {
+    const { aInt, bInt, scale } = alignExactDecimals(a, b);
+    return { int: aInt - bInt, scale };
+}
+
+function multiplyExactDecimals(a, b) {
+    return { int: a.int * b.int, scale: a.scale + b.scale };
+}
+
+function divideExactDecimals(a, b, maxFractionDigits = 20) {
+    if (b.int === 0n) return "÷0";
+
+    const numerator = a.int * pow10(b.scale);
+    const denominator = b.int * pow10(a.scale);
+    const negative = numerator < 0n !== denominator < 0n;
+    let dividend = numerator < 0n ? -numerator : numerator;
+    const divisor = denominator < 0n ? -denominator : denominator;
+    const integerPart = dividend / divisor;
+    let remainder = dividend % divisor;
+
+    if (remainder === 0n) {
+        return `${negative ? "-" : ""}${integerPart}`;
+    }
+
+    let fraction = "";
+    for (let i = 0; i < maxFractionDigits && remainder !== 0n; i++) {
+        remainder *= 10n;
+        fraction += (remainder / divisor).toString();
+        remainder %= divisor;
+    }
+
+    return `${negative ? "-" : ""}${integerPart}.${fraction.replace(/0+$/, "")}${remainder === 0n ? "" : "..."}`;
+}
+
+function moduloExactDecimals(a, b) {
+    if (b.int === 0n) return "÷0";
+
+    const numerator = a.int * pow10(b.scale);
+    const denominator = b.int * pow10(a.scale);
+    const quotient = numerator / denominator;
+    return formatExactDecimal(
+        subtractExactDecimals(
+            a,
+            multiplyExactDecimals(b, {
+                int: quotient,
+                scale: 0,
+            }),
+        ),
+    );
+}
+
+function powerExactDecimal(a, b) {
+    const exponent = normalizeExactDecimal(b);
+    if (exponent.scale !== 0) return "decimal exponent not supported";
+    if (exponent.int < 0n) {
+        if (exponent.int < -10000n) return "exponent too large";
+        const positivePower = {
+            int: a.int ** -exponent.int,
+            scale: a.scale * Number(-exponent.int),
+        };
+        return divideExactDecimals({ int: 1n, scale: 0 }, positivePower);
+    }
+    if (exponent.int > 10000n) return "exponent too large";
+
+    return formatExactDecimal({
+        int: a.int ** exponent.int,
+        scale: a.scale * Number(exponent.int),
+    });
+}
+
+export function fastCalculate(aStr, bStr) {
+    const cleanA = aStr.trim();
+    const cleanB = bStr.trim();
+
+    if (cleanA === "" || cleanB === "") {
+        return { valid: false, error: "Enter valid numbers." };
+    }
+
+    const a = parseExactDecimal(cleanA);
+    const b = parseExactDecimal(cleanB);
+    if (!a || !b) {
+        return { valid: false, error: "Enter valid numbers." };
+    }
+
+    return {
+        valid: true,
+        exact: true,
+        ops: [
+            {
+                label: "a + b",
+                value: formatExactDecimal(addExactDecimals(a, b)),
+            },
+            {
+                label: "a − b",
+                value: formatExactDecimal(subtractExactDecimals(a, b)),
+            },
+            {
+                label: "a × b",
+                value: formatExactDecimal(multiplyExactDecimals(a, b)),
+            },
+            { label: "a ÷ b", value: divideExactDecimals(a, b) },
+            { label: "a mod b", value: moduloExactDecimals(a, b) },
+            { label: "a ^ b", value: powerExactDecimal(a, b) },
+        ],
+    };
 }
 
 export function binaryCalculate(aStr, bStr, op) {
