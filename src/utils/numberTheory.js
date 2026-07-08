@@ -1,5 +1,5 @@
 export const INT_MAX = 2147483647;
-export const LLONG_MAX = 9223372036854775807;
+export const LLONG_MAX = Number("9223372036854775807");
 
 export function getDivisors(n) {
     if (n <= 0) return [];
@@ -101,18 +101,22 @@ export function bitwiseXorMany(numbers) {
 }
 
 export function modPow(base, exponent, mod) {
-    if (mod === 1) return 0;
-    let result = 1;
-    let b = base % mod;
-    let e = exponent;
-    while (e > 0) {
-        if (e % 2 === 1) {
-            result = (result * b) % mod;
+    const modulus = BigInt(mod);
+    if (modulus === 1n) return "0";
+
+    let result = 1n;
+    let b = ((BigInt(base) % modulus) + modulus) % modulus;
+    let e = BigInt(exponent);
+
+    while (e > 0n) {
+        if (e % 2n === 1n) {
+            result = (result * b) % modulus;
         }
-        e = Math.floor(e / 2);
-        b = (b * b) % mod;
+        e /= 2n;
+        b = (b * b) % modulus;
     }
-    return result;
+
+    return result.toString();
 }
 
 // --- C++ overflow awareness ---
