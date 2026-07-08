@@ -768,7 +768,12 @@ function BinarySearchOnAnswerTool() {
             </div>
 
             {result.answer === null ? (
-                <ErrorBlock message="No answer in [lo, hi] satisfies the predicate — try a larger hi." />
+                <ErrorBlock
+                    message={
+                        result.error ||
+                        "No answer in [lo, hi] satisfies the predicate — try a larger hi."
+                    }
+                />
             ) : (
                 <>
                     <div

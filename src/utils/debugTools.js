@@ -124,7 +124,13 @@ export function shuffleArray(array) {
 
 // Random integer
 export function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    let lo = Math.ceil(Number(min));
+    let hi = Math.floor(Number(max));
+
+    if (!Number.isFinite(lo) || !Number.isFinite(hi)) return 0;
+    if (lo > hi) [lo, hi] = [hi, lo];
+
+    return Math.floor(Math.random() * (hi - lo + 1)) + lo;
 }
 
 // Random array
@@ -139,18 +145,22 @@ export function generateRandomArray(
         permutation = false,
     } = {},
 ) {
+    const safeLength = Math.max(0, Math.trunc(Number(length)) || 0);
+    const lo = Math.ceil(Math.min(Number(min), Number(max)));
+    const hi = Math.floor(Math.max(Number(min), Number(max)));
     let result = [];
 
     if (permutation) {
-        result = Array.from({ length }, (_, i) => i + 1);
+        result = Array.from({ length: safeLength }, (_, i) => i + 1);
         return shuffleArray(result);
     }
 
     if (unique) {
         const used = new Set();
+        const possible = Math.max(0, hi - lo + 1);
 
-        while (result.length < length && used.size < max - min + 1) {
-            const x = randomInt(min, max);
+        while (result.length < safeLength && used.size < possible) {
+            const x = randomInt(lo, hi);
 
             if (!used.has(x)) {
                 used.add(x);
@@ -158,8 +168,8 @@ export function generateRandomArray(
             }
         }
     } else {
-        for (let i = 0; i < length; i++) {
-            result.push(randomInt(min, max));
+        for (let i = 0; i < safeLength; i++) {
+            result.push(randomInt(lo, hi));
         }
     }
 

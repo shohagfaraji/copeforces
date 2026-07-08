@@ -1,7 +1,14 @@
 // Activity selection: given [{start, end}], returns the selected
 // (non-overlapping) activities and the rejected ones, sorted by end time.
 export function activitySelection(activities) {
-    const sorted = [...activities].sort((a, b) => a.end - b.end);
+    const sorted = activities
+        .filter(
+            (activity) =>
+                Number.isFinite(activity.start) &&
+                Number.isFinite(activity.end) &&
+                activity.start <= activity.end,
+        )
+        .sort((a, b) => a.end - b.end);
     const selected = [];
     const rejected = [];
     let lastEnd = -Infinity;
@@ -21,11 +28,22 @@ export function activitySelection(activities) {
 // Fractional knapsack: items = [{name, value, weight}], capacity = number.
 // Returns chosen items with the fraction taken of each, sorted by value/weight ratio.
 export function fractionalKnapsack(items, capacity) {
-    const sorted = [...items]
+    const cap = Number(capacity);
+    if (!Number.isFinite(cap) || cap <= 0) {
+        return { taken: [], totalValue: 0 };
+    }
+
+    const sorted = items
+        .filter(
+            (item) =>
+                Number.isFinite(item.value) &&
+                Number.isFinite(item.weight) &&
+                item.weight > 0,
+        )
         .map((item) => ({ ...item, ratio: item.value / item.weight }))
         .sort((a, b) => b.ratio - a.ratio);
 
-    let remaining = capacity;
+    let remaining = cap;
     const taken = [];
     let totalValue = 0;
 
@@ -45,8 +63,16 @@ export function fractionalKnapsack(items, capacity) {
 // Greedy coin change: repeatedly takes the largest coin <= remaining amount.
 // Returns the coins used and whether it actually reached the target exactly.
 export function greedyCoinChange(denominations, target) {
-    const sorted = [...denominations].sort((a, b) => b - a);
-    let remaining = target;
+    const amountTarget = Math.trunc(Number(target));
+    if (!Number.isInteger(amountTarget) || amountTarget < 0) {
+        return { used: [], remaining: target, success: false };
+    }
+
+    const sorted = [...new Set(denominations)]
+        .map(Number)
+        .filter((coin) => Number.isInteger(coin) && coin > 0)
+        .sort((a, b) => b - a);
+    let remaining = amountTarget;
     const used = [];
 
     for (const coin of sorted) {
@@ -62,12 +88,22 @@ export function greedyCoinChange(denominations, target) {
 // Optimal coin change via DP — used only as a comparison baseline to
 // show when greedy fails to find the minimum number of coins.
 export function optimalCoinChange(denominations, target) {
-    const dp = new Array(target + 1).fill(Infinity);
-    const choice = new Array(target + 1).fill(-1);
+    const amountTarget = Math.trunc(Number(target));
+    if (!Number.isInteger(amountTarget) || amountTarget < 0) {
+        return { used: [], success: false };
+    }
+
+    const coins = [...new Set(denominations)]
+        .map(Number)
+        .filter((coin) => Number.isInteger(coin) && coin > 0)
+        .sort((a, b) => a - b);
+
+    const dp = new Array(amountTarget + 1).fill(Infinity);
+    const choice = new Array(amountTarget + 1).fill(-1);
     dp[0] = 0;
 
-    for (let amount = 1; amount <= target; amount++) {
-        for (const coin of denominations) {
+    for (let amount = 1; amount <= amountTarget; amount++) {
+        for (const coin of coins) {
             if (coin <= amount && dp[amount - coin] + 1 < dp[amount]) {
                 dp[amount] = dp[amount - coin] + 1;
                 choice[amount] = coin;
@@ -75,10 +111,10 @@ export function optimalCoinChange(denominations, target) {
         }
     }
 
-    if (dp[target] === Infinity) return { used: [], success: false };
+    if (dp[amountTarget] === Infinity) return { used: [], success: false };
 
     const used = [];
-    let amount = target;
+    let amount = amountTarget;
     while (amount > 0) {
         used.push(choice[amount]);
         amount -= choice[amount];
@@ -91,8 +127,15 @@ export function optimalCoinChange(denominations, target) {
 // Greedily schedules highest-profit jobs as late as possible before
 // their deadline. Returns the schedule slot-by-slot and total profit.
 export function jobSequencing(jobs) {
-    const sorted = [...jobs].sort((a, b) => b.profit - a.profit);
-    const maxDeadline = Math.max(...jobs.map((j) => j.deadline), 0);
+    const validJobs = jobs.filter(
+        (job) =>
+            Number.isFinite(job.deadline) &&
+            Number.isInteger(job.deadline) &&
+            job.deadline > 0 &&
+            Number.isFinite(job.profit),
+    );
+    const sorted = [...validJobs].sort((a, b) => b.profit - a.profit);
+    const maxDeadline = Math.max(...validJobs.map((j) => j.deadline), 0);
     const slots = new Array(maxDeadline).fill(null);
     let totalProfit = 0;
     const rejected = [];

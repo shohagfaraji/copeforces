@@ -1,4 +1,4 @@
-import { randomInt, shuffleArray, generateRandomArray } from "./debugTools";
+import { randomInt, shuffleArray, generateRandomArray } from "./debugTools.js";
 
 export { generateRandomArray };
 
@@ -11,10 +11,15 @@ export function generateRandomString(length, alphabet = "lowercase") {
         binary: "01",
     };
 
-    const chars = charsets[alphabet] || alphabet || charsets.lowercase;
+    const chars = Object.prototype.hasOwnProperty.call(charsets, alphabet)
+        ? charsets[alphabet]
+        : String(alphabet ?? charsets.lowercase);
+    const safeLength = Math.max(0, Math.trunc(Number(length)) || 0);
+    if (chars.length === 0) return "";
+
     let result = "";
 
-    for (let i = 0; i < length; i++) {
+    for (let i = 0; i < safeLength; i++) {
         result += chars[randomInt(0, chars.length - 1)];
     }
 
@@ -22,15 +27,17 @@ export function generateRandomString(length, alphabet = "lowercase") {
 }
 
 export function generateRandomPermutation(n) {
-    const base = Array.from({ length: n }, (_, i) => i + 1);
+    const safeN = Math.max(0, Math.trunc(Number(n)) || 0);
+    const base = Array.from({ length: safeN }, (_, i) => i + 1);
     return shuffleArray(base);
 }
 
 export function generateRandomTree(n, options = {}) {
     const { weighted = false, minWeight = 1, maxWeight = 10 } = options;
+    const safeN = Math.max(0, Math.trunc(Number(n)) || 0);
     const edges = [];
 
-    for (let child = 2; child <= n; child++) {
+    for (let child = 2; child <= safeN; child++) {
         const parent = randomInt(1, child - 1);
         const edge = { from: parent, to: child };
 
@@ -43,6 +50,8 @@ export function generateRandomTree(n, options = {}) {
 }
 
 export function generateRandomGraph(n, m, options = {}) {
+    const nodeCount = Math.max(0, Math.trunc(Number(n)) || 0);
+    const requestedEdges = Math.max(0, Math.trunc(Number(m)) || 0);
     const {
         directed = false,
         weighted = false,
@@ -55,6 +64,7 @@ export function generateRandomGraph(n, m, options = {}) {
 
     const edges = [];
     const seen = new Set();
+    if (nodeCount === 0) return edges;
 
     const edgeKey = (u, v) =>
         directed ? `${u}-${v}` : `${Math.min(u, v)}-${Math.max(u, v)}`;
@@ -66,8 +76,26 @@ export function generateRandomGraph(n, m, options = {}) {
         seen.add(edgeKey(u, v));
     };
 
-    if (connected && n > 1) {
-        for (let child = 2; child <= n; child++) {
+    const possibleEdges = (() => {
+        if (allowMultiEdges) return Infinity;
+        if (directed) {
+            return allowSelfLoops
+                ? nodeCount * nodeCount
+                : nodeCount * (nodeCount - 1);
+        }
+        const withoutLoops = (nodeCount * (nodeCount - 1)) / 2;
+        return allowSelfLoops ? withoutLoops + nodeCount : withoutLoops;
+    })();
+
+    const minimumConnectedEdges =
+        connected && nodeCount > 1 ? nodeCount - 1 : 0;
+    const targetEdges = Math.min(
+        Math.max(requestedEdges, minimumConnectedEdges),
+        possibleEdges,
+    );
+
+    if (connected && nodeCount > 1) {
+        for (let child = 2; child <= nodeCount; child++) {
             const parent = randomInt(1, child - 1);
             addEdge(parent, child);
         }
@@ -77,13 +105,13 @@ export function generateRandomGraph(n, m, options = {}) {
     // what's actually possible under the no-multi-edge / no-self-loop
     // constraints, this stops instead of looping forever.
     let attempts = 0;
-    const maxAttempts = Math.max(1000, m * 20);
+    const maxAttempts = Math.max(1000, targetEdges * 20);
 
-    while (edges.length < m && attempts < maxAttempts) {
+    while (edges.length < targetEdges && attempts < maxAttempts) {
         attempts++;
 
-        const u = randomInt(1, n);
-        const v = randomInt(1, n);
+        const u = randomInt(1, nodeCount);
+        const v = randomInt(1, nodeCount);
 
         if (!allowSelfLoops && u === v) continue;
         if (!allowMultiEdges && seen.has(edgeKey(u, v))) continue;
@@ -96,11 +124,15 @@ export function generateRandomGraph(n, m, options = {}) {
 
 export function generateRandomMatrix(rows, cols, min, max, options = {}) {
     const { symmetric = false } = options;
-    const matrix = Array.from({ length: rows }, () => new Array(cols).fill(0));
+    const safeRows = Math.max(0, Math.trunc(Number(rows)) || 0);
+    const safeCols = Math.max(0, Math.trunc(Number(cols)) || 0);
+    const matrix = Array.from({ length: safeRows }, () =>
+        new Array(safeCols).fill(0),
+    );
 
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            if (symmetric && rows === cols && j < i) {
+    for (let i = 0; i < safeRows; i++) {
+        for (let j = 0; j < safeCols; j++) {
+            if (symmetric && safeRows === safeCols && j < i) {
                 matrix[i][j] = matrix[j][i];
                 continue;
             }
@@ -114,21 +146,24 @@ export function generateRandomMatrix(rows, cols, min, max, options = {}) {
 
 export function generateRandomQueries(count, n, options = {}) {
     const { type = "range", valueMin = 1, valueMax = 100 } = options;
+    const safeCount = Math.max(0, Math.trunc(Number(count)) || 0);
+    const safeN = Math.max(0, Math.trunc(Number(n)) || 0);
     const queries = [];
+    if (safeN === 0) return queries;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < safeCount; i++) {
         if (type === "point") {
             queries.push({
-                index: randomInt(1, n),
+                index: randomInt(1, safeN),
                 value: randomInt(valueMin, valueMax),
             });
         } else if (type === "update") {
-            const l = randomInt(1, n);
-            const r = randomInt(l, n);
+            const l = randomInt(1, safeN);
+            const r = randomInt(l, safeN);
             queries.push({ l, r, value: randomInt(valueMin, valueMax) });
         } else {
-            const l = randomInt(1, n);
-            const r = randomInt(l, n);
+            const l = randomInt(1, safeN);
+            const r = randomInt(l, safeN);
             queries.push({ l, r });
         }
     }

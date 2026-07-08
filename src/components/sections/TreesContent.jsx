@@ -100,6 +100,7 @@ const TOOLS = [
         icon: FaProjectDiagram,
     },
     {
+        // id: "tr-diameter",
         id: "tr-lca",
         label: "Tree diameter",
         icon: FaProjectDiagram,
@@ -322,7 +323,7 @@ function LcaToolWrapper({ nodes, parent, depth, onHighlight }) {
     const lca = valid ? findLCA(parent, depth, a, b) : null;
 
     const highlight = () => {
-        if (!lca) return;
+        if (lca === null) return;
         const pathA = pathToRoot(parent, a);
         const pathB = pathToRoot(parent, b);
         const states = {};
@@ -392,7 +393,7 @@ function LcaToolWrapper({ nodes, parent, depth, onHighlight }) {
                     Find LCA
                 </button>
             </div>
-            {lca && (
+            {lca !== null && (
                 <p
                     className="text-sm font-mono-cf"
                     style={{ color: "var(--muted)" }}

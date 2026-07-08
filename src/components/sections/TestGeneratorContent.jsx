@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import {
     FaHashtag,
     FaFont,
@@ -46,7 +46,9 @@ function CopyButton({ value }) {
             setCopied(true);
 
             setTimeout(() => setCopied(false), 1200);
-        } catch {}
+        } catch {
+            /* clipboard unavailable */
+        }
     }
 
     return (
@@ -203,31 +205,16 @@ function RandomIntArrayTool() {
     const [sorted, setSorted] = useState(false);
 
     const [seed, setSeed] = useState(0);
-    const lastResultRef = useRef("");
 
     const result = useMemo(() => {
+        void seed;
         const options = { unique, sorted };
-        let generated = generateRandomArray(
+        return generateRandomArray(
             Number(length),
             Number(min),
             Number(max),
             options,
         );
-
-        let attempts = 0;
-        while (generated.join(",") === lastResultRef.current && attempts < 5) {
-            generated = generateRandomArray(
-                Number(length),
-                Number(min),
-                Number(max),
-                options,
-            );
-            attempts++;
-        }
-
-        lastResultRef.current = generated.join(",");
-        return generated;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [length, min, max, unique, sorted, seed]);
 
     return (
@@ -271,20 +258,10 @@ function RandomStringTool() {
     const [alphabet, setAlphabet] = useState("lowercase");
 
     const [seed, setSeed] = useState(0);
-    const lastResultRef = useRef("");
 
     const result = useMemo(() => {
-        let generated = generateRandomString(Number(length), alphabet);
-
-        let attempts = 0;
-        while (generated === lastResultRef.current && attempts < 5) {
-            generated = generateRandomString(Number(length), alphabet);
-            attempts++;
-        }
-
-        lastResultRef.current = generated;
-        return generated;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        void seed;
+        return generateRandomString(Number(length), alphabet);
     }, [length, alphabet, seed]);
 
     return (
@@ -543,24 +520,10 @@ function RandomPermutationTool() {
     const [n, setN] = useState(8);
 
     const [seed, setSeed] = useState(0);
-    const lastResultRef = useRef("");
 
     const result = useMemo(() => {
-        let generated = generateRandomPermutation(Number(n));
-
-        let attempts = 0;
-        while (
-            n > 1 &&
-            generated.join(",") === lastResultRef.current &&
-            attempts < 5
-        ) {
-            generated = generateRandomPermutation(Number(n));
-            attempts++;
-        }
-
-        lastResultRef.current = generated.join(",");
-        return generated;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        void seed;
+        return generateRandomPermutation(Number(n));
     }, [n, seed]);
 
     return (

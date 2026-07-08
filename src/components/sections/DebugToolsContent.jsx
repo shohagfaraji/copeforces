@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import {
     FaBalanceScale,
     FaStream,
@@ -12,7 +12,6 @@ import {
     FaRedo,
 } from "react-icons/fa";
 import {
-    normalizeOutput,
     compareOutputs,
     lineDifferences,
     characterDifference,
@@ -46,7 +45,9 @@ function CopyButton({ value }) {
             setCopied(true);
 
             setTimeout(() => setCopied(false), 1200);
-        } catch {}
+        } catch {
+            /* clipboard unavailable */
+        }
     }
 
     return (
@@ -568,35 +569,16 @@ function RandomArrayGeneratorTool() {
     // forces a fresh array when none of the actual parameters changed.
     const [seed, setSeed] = useState(0);
 
-    // Only the last result is kept (O(1) space) so we can avoid handing back
-    // the exact same combination twice in a row. Retries are capped at 5
-    // (O(1) extra time) rather than looping until a different array appears.
-    const lastResultRef = useRef("");
-
     const result = useMemo(() => {
+        void seed;
         const options = { unique, sorted, reverse, permutation };
 
-        let generated = generateRandomArray(
+        return generateRandomArray(
             Number(length),
             Number(min),
             Number(max),
             options,
         );
-
-        let attempts = 0;
-        while (generated.join(",") === lastResultRef.current && attempts < 5) {
-            generated = generateRandomArray(
-                Number(length),
-                Number(min),
-                Number(max),
-                options,
-            );
-            attempts++;
-        }
-
-        lastResultRef.current = generated.join(",");
-        return generated;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [length, min, max, unique, sorted, reverse, permutation, seed]);
 
     return (
@@ -698,26 +680,9 @@ function ShuffleArrayTool() {
     // Same idea as the random array tool: bump `seed` to force a reshuffle
     // even when the input text hasn't changed.
     const [seed, setSeed] = useState(0);
-    const lastResultRef = useRef("");
-
-    const numbers = parseNumberArray(input);
-
     const shuffled = useMemo(() => {
-        let arr = shuffleArray(numbers);
-
-        let attempts = 0;
-        while (
-            numbers.length > 1 &&
-            arr.join(",") === lastResultRef.current &&
-            attempts < 5
-        ) {
-            arr = shuffleArray(numbers);
-            attempts++;
-        }
-
-        lastResultRef.current = arr.join(",");
-        return arr;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        void seed;
+        return shuffleArray(parseNumberArray(input));
     }, [input, seed]);
 
     return (

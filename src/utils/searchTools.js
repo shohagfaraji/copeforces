@@ -1,6 +1,6 @@
 export function parseSortedArray(text) {
     return text
-        .split(/\s+/)
+        .split(/[\s,]+/)
         .map((s) => s.trim())
         .filter(Boolean)
         .map(Number)
@@ -85,6 +85,9 @@ export function binarySearchOnAnswer(lo, hi, predicate) {
     // assuming predicate(x) is false...false, true...true (monotonic)
     // over the range. Returns answer = null if predicate(hi) is false.
     const steps = [];
+    if (!Number.isFinite(lo) || !Number.isFinite(hi) || lo > hi) {
+        return { answer: null, steps, error: "Invalid search range" };
+    }
 
     if (!predicate(hi)) {
         return { answer: null, steps };
@@ -112,6 +115,10 @@ export function ternarySearch(f, lo, hi, options = {}) {
 
     let low = lo;
     let high = hi;
+    if (!Number.isFinite(low) || !Number.isFinite(high)) {
+        return { x: null, value: null, steps, error: "Invalid search range" };
+    }
+    if (low > high) [low, high] = [high, low];
 
     if (integer) {
         while (high - low > 2) {

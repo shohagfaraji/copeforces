@@ -14,6 +14,9 @@ import {
 } from "react-icons/fa";
 import {
     parseMatrix,
+    parseIntegerMatrix,
+    isNumericMatrix,
+    isRectangular,
     parseGrid,
     transposeMatrix,
     rotateMatrix,
@@ -49,7 +52,9 @@ function CopyButton({ value }) {
             setCopied(true);
 
             setTimeout(() => setCopied(false), 1200);
-        } catch {}
+        } catch {
+            /* clipboard unavailable */
+        }
     }
 
     return (
@@ -186,6 +191,15 @@ function ErrorBlock({ message }) {
     );
 }
 
+function matrixError(matrix, emptyMessage) {
+    if (matrix.length === 0) return emptyMessage;
+    if (!isRectangular(matrix)) return "Matrix rows must have equal length.";
+    if (!isNumericMatrix(matrix)) {
+        return "Matrix cells must be valid numbers.";
+    }
+    return null;
+}
+
 // ---------- Tool: Rotation ----------
 
 function RotationTool() {
@@ -194,10 +208,11 @@ function RotationTool() {
     const [times, setTimes] = useState(1);
 
     const matrix = parseMatrix(input);
+    const error = matrixError(matrix, "Enter a matrix to rotate.");
     const rotated = useMemo(
-        () => rotateMatrix(matrix, Number(times), direction),
+        () => (error ? [] : rotateMatrix(matrix, Number(times), direction)),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [input, direction, times],
+        [input, direction, times, error],
     );
 
     return (
@@ -227,8 +242,8 @@ function RotationTool() {
                 />
             </div>
 
-            {matrix.length === 0 ? (
-                <ErrorBlock message="Enter a matrix to rotate." />
+            {error ? (
+                <ErrorBlock message={error} />
             ) : (
                 <MatrixOutput matrix={rotated} />
             )}
@@ -242,7 +257,8 @@ function TransposeTool() {
     const [input, setInput] = useState("1 2 3\n4 5 6");
 
     const matrix = parseMatrix(input);
-    const transposed = matrix.length > 0 ? transposeMatrix(matrix) : [];
+    const error = matrixError(matrix, "Enter a matrix to transpose.");
+    const transposed = error ? [] : transposeMatrix(matrix);
 
     return (
         <div className="space-y-4">
@@ -253,8 +269,8 @@ function TransposeTool() {
                 rows={6}
             />
 
-            {matrix.length === 0 ? (
-                <ErrorBlock message="Enter a matrix to transpose." />
+            {error ? (
+                <ErrorBlock message={error} />
             ) : (
                 <MatrixOutput matrix={transposed} />
             )}
@@ -272,7 +288,11 @@ function PrefixMatrixTool() {
     const [c2, setC2] = useState(1);
 
     const matrix = parseMatrix(input);
-    const prefix = matrix.length > 0 ? prefixSumMatrix(matrix) : null;
+    const error = matrixError(
+        matrix,
+        "Enter a matrix to build a prefix sum table.",
+    );
+    const prefix = error ? null : prefixSumMatrix(matrix);
 
     const rows = matrix.length;
     const cols = matrix[0]?.length || 0;
@@ -306,8 +326,8 @@ function PrefixMatrixTool() {
                 <NumberField label="c2" value={c2} onChange={setC2} min={0} />
             </div>
 
-            {matrix.length === 0 ? (
-                <ErrorBlock message="Enter a matrix to build a prefix sum table." />
+            {error ? (
+                <ErrorBlock message={error} />
             ) : (
                 <>
                     <MatrixOutput matrix={prefix} />
@@ -344,12 +364,20 @@ function MatrixMultiplicationTool() {
     const [useMod, setUseMod] = useState(false);
     const [mod, setMod] = useState(1000000007);
 
-    const matA = parseMatrix(a);
-    const matB = parseMatrix(b);
+    const parsedA = parseIntegerMatrix(a);
+    const parsedB = parseIntegerMatrix(b);
 
     const result = useMemo(() => {
-        if (matA.length === 0 || matB.length === 0) return null;
-        return multiplyMatricesBig(matA, matB, useMod ? Number(mod) : null);
+        if (parsedA.error) return { error: `Matrix A: ${parsedA.error}` };
+        if (parsedB.error) return { error: `Matrix B: ${parsedB.error}` };
+        if (parsedA.matrix.length === 0 || parsedB.matrix.length === 0) {
+            return null;
+        }
+        return multiplyMatricesBig(
+            parsedA.matrix,
+            parsedB.matrix,
+            useMod ? String(mod).trim() : null,
+        );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [a, b, useMod, mod]);
 
@@ -395,14 +423,15 @@ function MatrixExponentiationTool() {
     const [useMod, setUseMod] = useState(true);
     const [mod, setMod] = useState(1000000007);
 
-    const matrix = parseMatrix(input);
+    const parsedMatrix = parseIntegerMatrix(input);
 
     const result = useMemo(() => {
-        if (matrix.length === 0) return null;
+        if (parsedMatrix.error) return { error: parsedMatrix.error };
+        if (parsedMatrix.matrix.length === 0) return null;
         return matrixPowerBig(
-            matrix,
-            Number(power),
-            useMod ? Number(mod) : null,
+            parsedMatrix.matrix,
+            String(power).trim(),
+            useMod ? String(mod).trim() : null,
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [input, power, useMod, mod]);
@@ -683,7 +712,11 @@ function SpiralTraversalTool() {
     const [input, setInput] = useState("10 11 12 13\n14 15 16 17\n18 19 20 21");
 
     const matrix = parseMatrix(input);
-    const spiral = matrix.length > 0 ? spiralOrder(matrix) : [];
+    const error = matrixError(
+        matrix,
+        "Enter a matrix to walk in spiral order.",
+    );
+    const spiral = error ? [] : spiralOrder(matrix);
 
     return (
         <div className="space-y-4">
@@ -694,8 +727,8 @@ function SpiralTraversalTool() {
                 rows={6}
             />
 
-            {matrix.length === 0 ? (
-                <ErrorBlock message="Enter a matrix to walk in spiral order." />
+            {error ? (
+                <ErrorBlock message={error} />
             ) : (
                 <div
                     className="rounded-lg border p-4"

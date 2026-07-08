@@ -3,14 +3,24 @@
 // capacity used) plus the chosen items, so the table itself can be
 // rendered and the optimal path highlighted.
 export function knapsack01(items, capacity) {
-    const n = items.length;
-    const dp = Array.from({ length: n + 1 }, () =>
-        new Array(capacity + 1).fill(0),
+    const cap = Math.trunc(Number(capacity));
+    if (!Number.isInteger(cap) || cap < 0) {
+        return { dp: [], best: 0, taken: [] };
+    }
+
+    const safeItems = items.filter(
+        (item) =>
+            Number.isFinite(item.value) &&
+            Number.isFinite(item.weight) &&
+            Number.isInteger(item.weight) &&
+            item.weight > 0,
     );
+    const n = safeItems.length;
+    const dp = Array.from({ length: n + 1 }, () => new Array(cap + 1).fill(0));
 
     for (let i = 1; i <= n; i++) {
-        const { value, weight } = items[i - 1];
-        for (let w = 0; w <= capacity; w++) {
+        const { value, weight } = safeItems[i - 1];
+        for (let w = 0; w <= cap; w++) {
             dp[i][w] = dp[i - 1][w];
             if (weight <= w) {
                 dp[i][w] = Math.max(dp[i][w], dp[i - 1][w - weight] + value);
@@ -19,16 +29,16 @@ export function knapsack01(items, capacity) {
     }
 
     const taken = [];
-    let w = capacity;
+    let w = cap;
     for (let i = n; i > 0; i--) {
         if (dp[i][w] !== dp[i - 1][w]) {
-            taken.push(items[i - 1]);
-            w -= items[i - 1].weight;
+            taken.push(safeItems[i - 1]);
+            w -= safeItems[i - 1].weight;
         }
     }
     taken.reverse();
 
-    return { dp, best: dp[n]?.[capacity] ?? 0, taken };
+    return { dp, best: dp[n]?.[cap] ?? 0, taken };
 }
 
 // Longest Common Subsequence: a, b = strings.
@@ -71,12 +81,22 @@ export function longestCommonSubsequence(a, b) {
 // the Greedy section. Returns the dp array (min coins for each amount)
 // and the coins actually used for the target.
 export function minCoinChange(denominations, target) {
-    const dp = new Array(target + 1).fill(Infinity);
-    const choice = new Array(target + 1).fill(-1);
+    const amountTarget = Math.trunc(Number(target));
+    if (!Number.isInteger(amountTarget) || amountTarget < 0) {
+        return { dp: [], used: [], success: false };
+    }
+
+    const coins = [...new Set(denominations)]
+        .map(Number)
+        .filter((coin) => Number.isInteger(coin) && coin > 0)
+        .sort((a, b) => a - b);
+
+    const dp = new Array(amountTarget + 1).fill(Infinity);
+    const choice = new Array(amountTarget + 1).fill(-1);
     dp[0] = 0;
 
-    for (let amount = 1; amount <= target; amount++) {
-        for (const coin of denominations) {
+    for (let amount = 1; amount <= amountTarget; amount++) {
+        for (const coin of coins) {
             if (coin <= amount && dp[amount - coin] + 1 < dp[amount]) {
                 dp[amount] = dp[amount - coin] + 1;
                 choice[amount] = coin;
@@ -84,10 +104,10 @@ export function minCoinChange(denominations, target) {
         }
     }
 
-    if (dp[target] === Infinity) return { dp, used: [], success: false };
+    if (dp[amountTarget] === Infinity) return { dp, used: [], success: false };
 
     const used = [];
-    let amount = target;
+    let amount = amountTarget;
     while (amount > 0) {
         used.push(choice[amount]);
         amount -= choice[amount];
