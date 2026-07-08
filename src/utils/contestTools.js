@@ -3,6 +3,7 @@ export function convertBase(value, fromBase, toBase) {
     if (clean === "") return null;
     const negative = clean.startsWith("-");
     const digits = negative ? clean.slice(1) : clean;
+    if (digits === "") return null;
 
     let n = 0n;
     const base = BigInt(fromBase);
@@ -75,23 +76,60 @@ export function fromRoman(str) {
 }
 
 const PRECEDENCE = { "+": 1, "-": 1, "*": 2, "/": 2, "%": 2, "^": 3 };
+const RIGHT_ASSOCIATIVE = new Set(["^"]);
 
 function tokenize(expr) {
     const tokens = [];
     let i = 0;
+    let expectOperand = true;
+
     while (i < expr.length) {
         const c = expr[i];
-        if (c === " ") {
+        if (/\s/.test(c)) {
             i++;
-        } else if (/[0-9.]/.test(c)) {
-            let num = "";
+        } else if (
+            (c === "+" || c === "-") &&
+            expectOperand &&
+            /[0-9.]/.test(expr[i + 1] || "")
+        ) {
+            let num = c;
+            i++;
+            let dots = 0;
             while (i < expr.length && /[0-9.]/.test(expr[i])) {
+                if (expr[i] === ".") dots++;
+                if (dots > 1) return null;
                 num += expr[i];
                 i++;
             }
-            tokens.push({ type: "num", value: parseFloat(num) });
+            if (num === "+" || num === "-" || Number.isNaN(Number(num))) {
+                return null;
+            }
+            tokens.push({ type: "num", value: Number(num) });
+            expectOperand = false;
+        } else if (
+            (c === "+" || c === "-") &&
+            expectOperand &&
+            expr[i + 1] === "("
+        ) {
+            tokens.push({ type: "num", value: 0 });
+            tokens.push({ type: "op", value: c });
+            i++;
+            expectOperand = true;
+        } else if (/[0-9.]/.test(c)) {
+            let num = "";
+            let dots = 0;
+            while (i < expr.length && /[0-9.]/.test(expr[i])) {
+                if (expr[i] === ".") dots++;
+                if (dots > 1) return null;
+                num += expr[i];
+                i++;
+            }
+            if (num === "." || Number.isNaN(Number(num))) return null;
+            tokens.push({ type: "num", value: Number(num) });
+            expectOperand = false;
         } else if ("+-*/%^()".includes(c)) {
             tokens.push({ type: "op", value: c });
+            expectOperand = c !== ")";
             i++;
         } else {
             return null;
@@ -123,8 +161,11 @@ export function evaluateExpression(expr) {
             while (
                 opStack.length &&
                 opStack[opStack.length - 1] !== "(" &&
-                PRECEDENCE[opStack[opStack.length - 1]] >=
-                    PRECEDENCE[token.value]
+                (RIGHT_ASSOCIATIVE.has(token.value)
+                    ? PRECEDENCE[opStack[opStack.length - 1]] >
+                      PRECEDENCE[token.value]
+                    : PRECEDENCE[opStack[opStack.length - 1]] >=
+                      PRECEDENCE[token.value])
             ) {
                 output.push({ type: "op", value: opStack.pop() });
             }
@@ -178,6 +219,43 @@ export function evaluateExpression(expr) {
 
     if (evalStack.length !== 1) return { error: "invalid expression" };
     return { result: evalStack[0] };
+}
+
+export function binaryCalculate(aStr, bStr, op) {
+    const cleanA = aStr.trim();
+    const cleanB = bStr.trim();
+
+    if (!/^[01]+$/.test(cleanA) || !/^[01]+$/.test(cleanB)) {
+        return { error: "Both values must be binary (0/1 only)." };
+    }
+
+    const a = BigInt(`0b${cleanA}`);
+    const b = BigInt(`0b${cleanB}`);
+    const width = BigInt(Math.max(cleanA.length, cleanB.length));
+    let result;
+
+    switch (op) {
+        case "AND":
+            result = a & b;
+            break;
+        case "OR":
+            result = a | b;
+            break;
+        case "XOR":
+            result = a ^ b;
+            break;
+        case "A+B":
+            result = a + b;
+            break;
+        default:
+            return { error: "unknown operator" };
+    }
+
+    const binary = result.toString(2);
+    return {
+        result: binary.padStart(Number(width), "0"),
+        decimal: result.toString(),
+    };
 }
 
 export function bigIntCalculate(aStr, bStr, op) {

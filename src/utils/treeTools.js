@@ -29,6 +29,8 @@ export function buildTreeAdjacency(nodes, edges) {
     const adj = {};
     nodes.forEach((n) => (adj[n] = []));
     for (const { u, v } of edges) {
+        if (!adj[u]) adj[u] = [];
+        if (!adj[v]) adj[v] = [];
         adj[u].push(v);
         adj[v].push(u);
     }
@@ -43,21 +45,34 @@ export function pickRoot(nodes) {
 
 // Returns { parent, depth, order } via BFS from root.
 export function buildTreeStructure(nodes, adj, root) {
-    const parent = { [root]: null };
-    const depth = { [root]: 0 };
-    const order = [root];
-    const queue = [root];
-    const visited = new Set([root]);
+    const parent = {};
+    const depth = {};
+    const order = [];
+    const visited = new Set();
+    const starts = root
+        ? [root, ...nodes.filter((node) => node !== root)]
+        : [...nodes];
 
-    while (queue.length > 0) {
-        const current = queue.shift();
-        for (const neighbor of adj[current] || []) {
-            if (!visited.has(neighbor)) {
-                visited.add(neighbor);
-                parent[neighbor] = current;
-                depth[neighbor] = depth[current] + 1;
-                order.push(neighbor);
-                queue.push(neighbor);
+    for (const start of starts) {
+        if (visited.has(start)) continue;
+
+        parent[start] = null;
+        depth[start] = 0;
+        visited.add(start);
+        order.push(start);
+
+        const queue = [start];
+        let head = 0;
+        while (head < queue.length) {
+            const current = queue[head++];
+            for (const neighbor of adj[current] || []) {
+                if (!visited.has(neighbor)) {
+                    visited.add(neighbor);
+                    parent[neighbor] = current;
+                    depth[neighbor] = depth[current] + 1;
+                    order.push(neighbor);
+                    queue.push(neighbor);
+                }
             }
         }
     }
@@ -68,40 +83,86 @@ export function buildTreeStructure(nodes, adj, root) {
 export function subtreeSizes(nodes, adj, root) {
     const sizes = {};
     const visited = new Set();
+    const starts = root
+        ? [root, ...nodes.filter((node) => node !== root)]
+        : [...nodes];
 
-    function dfs(node) {
-        visited.add(node);
-        let size = 1;
-        for (const neighbor of adj[node] || []) {
-            if (!visited.has(neighbor)) {
-                size += dfs(neighbor);
+    for (const start of starts) {
+        if (visited.has(start)) continue;
+
+        const parent = { [start]: null };
+        const order = [];
+        const stack = [start];
+        visited.add(start);
+
+        while (stack.length > 0) {
+            const node = stack.pop();
+            order.push(node);
+            for (const neighbor of adj[node] || []) {
+                if (!visited.has(neighbor)) {
+                    visited.add(neighbor);
+                    parent[neighbor] = node;
+                    stack.push(neighbor);
+                }
             }
         }
-        sizes[node] = size;
-        return size;
+
+        for (let i = order.length - 1; i >= 0; i--) {
+            const node = order[i];
+            sizes[node] = 1;
+            for (const neighbor of adj[node] || []) {
+                if (parent[neighbor] === node) {
+                    sizes[node] += sizes[neighbor];
+                }
+            }
+        }
     }
 
-    dfs(root);
     return sizes;
 }
 
 export function subtreeHeights(nodes, adj, root) {
     const heights = {};
     const visited = new Set();
+    const starts = root
+        ? [root, ...nodes.filter((node) => node !== root)]
+        : [...nodes];
 
-    function dfs(node) {
-        visited.add(node);
-        let maxChildHeight = -1;
-        for (const neighbor of adj[node] || []) {
-            if (!visited.has(neighbor)) {
-                maxChildHeight = Math.max(maxChildHeight, dfs(neighbor));
+    for (const start of starts) {
+        if (visited.has(start)) continue;
+
+        const parent = { [start]: null };
+        const order = [];
+        const stack = [start];
+        visited.add(start);
+
+        while (stack.length > 0) {
+            const node = stack.pop();
+            order.push(node);
+            for (const neighbor of adj[node] || []) {
+                if (!visited.has(neighbor)) {
+                    visited.add(neighbor);
+                    parent[neighbor] = node;
+                    stack.push(neighbor);
+                }
             }
         }
-        heights[node] = maxChildHeight + 1;
-        return heights[node];
+
+        for (let i = order.length - 1; i >= 0; i--) {
+            const node = order[i];
+            let maxChildHeight = -1;
+            for (const neighbor of adj[node] || []) {
+                if (parent[neighbor] === node) {
+                    maxChildHeight = Math.max(
+                        maxChildHeight,
+                        heights[neighbor],
+                    );
+                }
+            }
+            heights[node] = maxChildHeight + 1;
+        }
     }
 
-    dfs(root);
     return heights;
 }
 
@@ -110,9 +171,13 @@ export function subtreeHeights(nodes, adj, root) {
 export function findLCA(parent, depth, a, b) {
     let x = a,
         y = b;
+    if (depth[x] === undefined || depth[y] === undefined) return null;
     while (depth[x] > depth[y]) x = parent[x];
     while (depth[y] > depth[x]) y = parent[y];
     while (x !== y) {
+        if (x === null || y === null || x === undefined || y === undefined) {
+            return null;
+        }
         x = parent[x];
         y = parent[y];
     }
@@ -138,8 +203,9 @@ export function treeDiameter(nodes, adj) {
         const parent = { [start]: null };
         const queue = [start];
         let farthest = start;
-        while (queue.length > 0) {
-            const current = queue.shift();
+        let head = 0;
+        while (head < queue.length) {
+            const current = queue[head++];
             for (const neighbor of adj[current] || []) {
                 if (!(neighbor in dist)) {
                     dist[neighbor] = dist[current] + 1;
@@ -153,15 +219,29 @@ export function treeDiameter(nodes, adj) {
     }
 
     if (nodes.length === 0) return { length: 0, path: [] };
-    const first = bfsFarthest(nodes[0]);
-    const second = bfsFarthest(first.farthest);
+    const visited = new Set();
+    let best = { length: 0, path: [nodes[0]] };
 
-    const path = [];
-    let current = second.farthest;
-    while (current !== null && current !== undefined) {
-        path.push(current);
-        current = second.parent[current];
+    for (const start of nodes) {
+        if (visited.has(start)) continue;
+
+        const first = bfsFarthest(start);
+        Object.keys(first.dist).forEach((node) => visited.add(node));
+        const second = bfsFarthest(first.farthest);
+
+        const path = [];
+        let current = second.farthest;
+        while (current !== null && current !== undefined) {
+            path.push(current);
+            current = second.parent[current];
+        }
+
+        const candidate = {
+            length: second.dist[second.farthest],
+            path: path.reverse(),
+        };
+        if (candidate.length > best.length) best = candidate;
     }
 
-    return { length: second.dist[second.farthest], path: path.reverse() };
+    return best;
 }

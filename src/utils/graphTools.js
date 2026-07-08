@@ -13,9 +13,11 @@ export function parseEdgeList(text) {
         const parts = line.split(/\s+/);
         if (parts.length < 2) continue;
         const [u, v, w] = parts;
+        const weight = w !== undefined ? Number(w) : 1;
+        if (!Number.isFinite(weight)) continue;
         nodeSet.add(u);
         nodeSet.add(v);
-        edges.push({ u, v, w: w !== undefined ? Number(w) : 1 });
+        edges.push({ u, v, w: weight });
     }
 
     return { nodes: Array.from(nodeSet), edges };
@@ -25,6 +27,8 @@ export function buildAdjacency(nodes, edges, directed) {
     const adj = {};
     for (const node of nodes) adj[node] = [];
     for (const { u, v, w } of edges) {
+        if (!adj[u]) adj[u] = [];
+        if (!adj[v]) adj[v] = [];
         adj[u].push({ to: v, weight: w });
         if (!directed) adj[v].push({ to: u, weight: w });
     }
@@ -35,8 +39,9 @@ export function bfs(adj, start) {
     const visited = new Set([start]);
     const order = [start];
     const queue = [start];
-    while (queue.length > 0) {
-        const current = queue.shift();
+    let head = 0;
+    while (head < queue.length) {
+        const current = queue[head++];
         for (const { to } of adj[current] || []) {
             if (!visited.has(to)) {
                 visited.add(to);
@@ -51,14 +56,21 @@ export function bfs(adj, start) {
 export function dfs(adj, start) {
     const visited = new Set();
     const order = [];
-    function visit(node) {
+    const stack = [start];
+
+    while (stack.length > 0) {
+        const node = stack.pop();
+        if (visited.has(node)) continue;
         visited.add(node);
         order.push(node);
-        for (const { to } of adj[node] || []) {
-            if (!visited.has(to)) visit(to);
+
+        const neighbors = adj[node] || [];
+        for (let i = neighbors.length - 1; i >= 0; i--) {
+            const { to } = neighbors[i];
+            if (!visited.has(to)) stack.push(to);
         }
     }
-    visit(start);
+
     return order;
 }
 
@@ -80,8 +92,9 @@ export function isBipartite(nodes, adj) {
         if (color[start] !== undefined) continue;
         color[start] = 0;
         const queue = [start];
-        while (queue.length > 0) {
-            const current = queue.shift();
+        let head = 0;
+        while (head < queue.length) {
+            const current = queue[head++];
             for (const { to } of adj[current] || []) {
                 if (color[to] === undefined) {
                     color[to] = 1 - color[current];
@@ -102,8 +115,9 @@ export function hasCycleUndirected(nodes, adj) {
         const parent = {};
         const queue = [start];
         visited.add(start);
-        while (queue.length > 0) {
-            const current = queue.shift();
+        let head = 0;
+        while (head < queue.length) {
+            const current = queue[head++];
             for (const { to } of adj[current] || []) {
                 if (!visited.has(to)) {
                     visited.add(to);
@@ -125,18 +139,30 @@ export function hasCycleDirected(nodes, adj) {
     const color = {};
     nodes.forEach((n) => (color[n] = WHITE));
 
-    function visit(node) {
-        color[node] = GRAY;
-        for (const { to } of adj[node] || []) {
-            if (color[to] === GRAY) return true;
-            if (color[to] === WHITE && visit(to)) return true;
-        }
-        color[node] = BLACK;
-        return false;
-    }
-
     for (const node of nodes) {
-        if (color[node] === WHITE && visit(node)) return true;
+        if (color[node] !== WHITE) continue;
+
+        color[node] = GRAY;
+        const stack = [{ node, index: 0 }];
+
+        while (stack.length > 0) {
+            const frame = stack[stack.length - 1];
+            const neighbors = adj[frame.node] || [];
+
+            if (frame.index >= neighbors.length) {
+                color[frame.node] = BLACK;
+                stack.pop();
+                continue;
+            }
+
+            const { to } = neighbors[frame.index++];
+            if (color[to] === undefined) color[to] = WHITE;
+            if (color[to] === GRAY) return true;
+            if (color[to] === WHITE) {
+                color[to] = GRAY;
+                stack.push({ node: to, index: 0 });
+            }
+        }
     }
     return false;
 }
@@ -147,6 +173,18 @@ export function dijkstra(nodes, adj, start) {
     nodes.forEach((n) => (dist[n] = Infinity));
     dist[start] = 0;
     const visited = new Set();
+
+    for (const node of nodes) {
+        for (const { weight } of adj[node] || []) {
+            if (!Number.isFinite(weight) || weight < 0) {
+                return {
+                    dist,
+                    prev,
+                    error: "Dijkstra requires finite non-negative edge weights",
+                };
+            }
+        }
+    }
 
     while (visited.size < nodes.length) {
         let current = null;
@@ -192,8 +230,9 @@ export function bfsSteps(adj, start) {
     const queue = [start];
     steps.push({ visiting: start, visited: new Set(), backtrackTo: null });
 
-    while (queue.length > 0) {
-        const current = queue.shift();
+    let head = 0;
+    while (head < queue.length) {
+        const current = queue[head++];
         steps.push({
             visiting: current,
             visited: new Set(visited),
@@ -217,29 +256,46 @@ export function bfsSteps(adj, start) {
 export function dfsSteps(adj, start) {
     const steps = [];
     const visited = new Set();
+    const stack = [{ node: start, index: 0, entered: false }];
 
-    function visit(node, parent) {
-        visited.add(node);
-        steps.push({
-            visiting: node,
-            visited: new Set(visited),
-            backtrackTo: null,
-        });
+    while (stack.length > 0) {
+        const frame = stack[stack.length - 1];
 
-        for (const { to } of adj[node] || []) {
+        if (!frame.entered) {
+            visited.add(frame.node);
+            frame.entered = true;
+            steps.push({
+                visiting: frame.node,
+                visited: new Set(visited),
+                backtrackTo: null,
+            });
+        }
+
+        const neighbors = adj[frame.node] || [];
+        let next = null;
+        while (frame.index < neighbors.length) {
+            const { to } = neighbors[frame.index++];
             if (!visited.has(to)) {
-                visit(to, node);
-                // Just returned from a deeper branch — show the backtrack
-                // back to this node before continuing to the next neighbor.
-                steps.push({
-                    visiting: node,
-                    visited: new Set(visited),
-                    backtrackTo: to,
-                });
+                next = to;
+                break;
             }
+        }
+
+        if (next !== null) {
+            stack.push({ node: next, index: 0, entered: false });
+            continue;
+        }
+
+        stack.pop();
+        const parent = stack[stack.length - 1];
+        if (parent) {
+            steps.push({
+                visiting: parent.node,
+                visited: new Set(visited),
+                backtrackTo: frame.node,
+            });
         }
     }
 
-    visit(start, null);
     return steps;
 }

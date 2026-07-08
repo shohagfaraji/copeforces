@@ -23,13 +23,7 @@ function GraphCanvas({
 }) {
     const positions = useMemo(
         () => computeLayout(nodes, edges, width, height),
-        // Re-layout only when the structure actually changes, not on every state update
-        [
-            nodes.join(","),
-            edges.map((e) => `${e.u}-${e.v}-${e.w}`).join(","),
-            width,
-            height,
-        ],
+        [nodes, edges, width, height],
     );
 
     if (nodes.length === 0) {

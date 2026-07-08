@@ -5,10 +5,8 @@ import App from "./App.jsx";
 import Stats from "./pages/Stats.jsx";
 
 const path = window.location.pathname.replace(/\/+$/, "") || "/";
-const RootComponent = path === "/stats" ? Stats : App;
+const rootElement = path === "/stats" ? <Stats /> : <App />;
 
 createRoot(document.getElementById("root")).render(
-    <StrictMode>
-        <RootComponent />
-    </StrictMode>,
+    <StrictMode>{rootElement}</StrictMode>,
 );

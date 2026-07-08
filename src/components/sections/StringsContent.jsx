@@ -4,7 +4,6 @@ import {
     isPalindrome,
     reverseString,
     charFrequency,
-    polynomialHash,
     prefixFunction,
     zFunction,
     findOccurrences,
@@ -12,20 +11,6 @@ import {
 import { sections } from "../../data/sections";
 
 const ACCENT = sections.find((s) => s.id === "strings")?.color || "#808080";
-
-function hexToRgba(hex, alpha) {
-    const clean = hex.replace("#", "");
-    const full =
-        clean.length === 3
-            ? clean
-                  .split("")
-                  .map((c) => c + c)
-                  .join("")
-            : clean;
-    const int = parseInt(full, 16);
-
-    return `rgba(${(int >> 16) & 255}, ${(int >> 8) & 255}, ${int & 255}, ${alpha})`;
-}
 
 function ToolBlock({ id, label, icon: Icon, children }) {
     return (

@@ -18,14 +18,15 @@ import {
     toRoman,
     fromRoman,
     evaluateExpression,
+    binaryCalculate,
     bigIntCalculate,
     compareFloatAddition,
 } from "../../utils/contestTools";
 import {
     cppTypeFor,
     multiplicationExceeds,
-    INT_MAX,
-    LLONG_MAX,
+    INT_MAX_BIG,
+    LLONG_MAX_BIG,
 } from "../../utils/numberTheory";
 import { sections } from "../../data/sections";
 
@@ -599,18 +600,8 @@ function BinaryCalculatorTool() {
     const bValid = validBinary(b);
     const valid = aValid && bValid;
 
-    let result = null;
-    if (valid) {
-        const numA = parseInt(a, 2);
-        const numB = parseInt(b, 2);
-        const ops = {
-            AND: numA & numB,
-            OR: numA | numB,
-            XOR: numA ^ numB,
-            "A+B": numA + numB,
-        };
-        result = ops[op].toString(2);
-    }
+    const calculation = valid ? binaryCalculate(a, b, op) : null;
+    const result = calculation?.result ?? null;
 
     return (
         <div className="space-y-4">
@@ -644,7 +635,16 @@ function BinaryCalculatorTool() {
             </div>
             <OutputPanel
                 value={result}
-                error={!valid ? "Both values must be binary (0/1 only)." : null}
+                error={
+                    !valid
+                        ? "Both values must be binary (0/1 only)."
+                        : calculation?.error
+                }
+                hint={
+                    calculation?.decimal
+                        ? `decimal value: ${calculation.decimal}`
+                        : null
+                }
                 copyValue={result}
             />
         </div>
@@ -790,18 +790,15 @@ function OverflowCheckerTool() {
     const [a, setA] = useState("100000");
     const [b, setB] = useState("100000");
 
-    const n = Number(value);
-    const validN = Number.isFinite(n);
-    const fitType = validN ? cppTypeFor(n) : null;
+    const validInteger = /^[+-]?\d+$/.test(value.trim());
+    const fitType = validInteger ? cppTypeFor(value.trim()) : null;
 
-    const numA = Number(a);
-    const numB = Number(b);
-    const validMul = Number.isFinite(numA) && Number.isFinite(numB);
+    const validMul = /^[+-]?\d+$/.test(a.trim()) && /^[+-]?\d+$/.test(b.trim());
     const overflowsInt = validMul
-        ? multiplicationExceeds(numA, numB, INT_MAX)
+        ? multiplicationExceeds(a.trim(), b.trim(), INT_MAX_BIG)
         : null;
     const overflowsLL = validMul
-        ? multiplicationExceeds(numA, numB, LLONG_MAX)
+        ? multiplicationExceeds(a.trim(), b.trim(), LLONG_MAX_BIG)
         : null;
 
     return (
@@ -813,7 +810,7 @@ function OverflowCheckerTool() {
                     onChange={setValue}
                     width="w-40"
                 />
-                {validN && (
+                {validInteger && (
                     <div className="flex items-center gap-2 mt-2 text-xs font-mono-cf">
                         <span style={{ color: "var(--muted)" }}>
                             smallest fit:

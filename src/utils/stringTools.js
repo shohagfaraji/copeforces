@@ -1,5 +1,4 @@
 export function isPalindrome(s) {
-    if (s.length === 0) return false;
     const reversed = s.split("").reverse().join("");
     return s === reversed;
 }
@@ -18,12 +17,18 @@ export function charFrequency(s) {
 
 // Polynomial hash: hash = (s[0]*base^(n-1) + s[1]*base^(n-2) + ... + s[n-1]) mod m
 export function polynomialHash(s, base, mod) {
-    let hash = 0;
+    const b = BigInt(base);
+    const m = BigInt(mod);
+    if (m <= 0n) return null;
+
+    let hash = 0n;
     for (let i = 0; i < s.length; i++) {
-        const code = s.charCodeAt(i);
-        hash = (hash * base + code) % mod;
+        const code = BigInt(s.charCodeAt(i));
+        hash = (hash * b + code) % m;
     }
-    return hash;
+    return hash <= BigInt(Number.MAX_SAFE_INTEGER)
+        ? Number(hash)
+        : hash.toString();
 }
 
 // Prefix function (KMP failure function): pi[i] = length of the longest
@@ -67,12 +72,18 @@ export function zFunction(s) {
 // Returns all starting indices (0-based) where pattern occurs in text, using KMP.
 export function findOccurrences(text, pattern) {
     if (pattern.length === 0 || pattern.length > text.length) return [];
-    const combined = pattern + "\u0001" + text;
-    const pi = prefixFunction(combined);
+    const pi = prefixFunction(pattern);
     const positions = [];
-    for (let i = pattern.length + 1; i < combined.length; i++) {
-        if (pi[i] === pattern.length) {
-            positions.push(i - 2 * pattern.length);
+    let matched = 0;
+
+    for (let i = 0; i < text.length; i++) {
+        while (matched > 0 && text[i] !== pattern[matched]) {
+            matched = pi[matched - 1];
+        }
+        if (text[i] === pattern[matched]) matched++;
+        if (matched === pattern.length) {
+            positions.push(i - pattern.length + 1);
+            matched = pi[matched - 1];
         }
     }
     return positions;

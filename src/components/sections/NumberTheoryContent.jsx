@@ -16,8 +16,9 @@ import {
     modPow,
     cppTypeFor,
     multiplicationExceeds,
-    INT_MAX,
-    LLONG_MAX,
+    INT_MIN_BIG,
+    INT_MAX_BIG,
+    LLONG_MAX_BIG,
 } from "../../utils/numberTheory";
 import { sections } from "../../data/sections";
 
@@ -235,9 +236,7 @@ function BitwiseResult({ numbers }) {
 function GcdLcmResult({ numbers }) {
     const gcd = gcdMany(numbers);
     const lcm = lcmMany(numbers);
-    const lcmOverflows =
-        numbers.length > 1 &&
-        multiplicationExceeds(numbers[0], numbers[1], LLONG_MAX);
+    const lcmOverflows = multiplicationExceeds(lcm, 1, LLONG_MAX_BIG);
 
     return (
         <div>
@@ -292,10 +291,20 @@ function LabeledInput({ label, value, onChange, width = "w-32" }) {
     );
 }
 
-function parseWholeNumberInput(value) {
+function parseIntegerInput(value) {
     const trimmed = value.trim();
-    if (!/^\d+$/.test(trimmed)) return null;
+    if (!/^[+-]?\d+$/.test(trimmed)) return null;
     return BigInt(trimmed);
+}
+
+function parseNonNegativeIntegerInput(value) {
+    const parsed = parseIntegerInput(value);
+    return parsed !== null && parsed >= 0n ? parsed : null;
+}
+
+function parsePositiveIntegerInput(value) {
+    const parsed = parseIntegerInput(value);
+    return parsed !== null && parsed > 0n ? parsed : null;
 }
 
 function ModPowCalculator() {
@@ -304,12 +313,11 @@ function ModPowCalculator() {
     const [mod, setMod] = useState("");
 
     const allFilled = base !== "" && exponent !== "" && mod !== "";
-    const b = parseWholeNumberInput(base);
-    const e = parseWholeNumberInput(exponent);
-    const m = parseWholeNumberInput(mod);
+    const b = parseIntegerInput(base);
+    const e = parseNonNegativeIntegerInput(exponent);
+    const m = parsePositiveIntegerInput(mod);
     const allIntegers = b !== null && e !== null && m !== null;
-    const inRange = b !== null && e !== null && m !== null && m >= 1n;
-    const valid = allFilled && allIntegers && inRange;
+    const valid = allFilled && allIntegers;
 
     const hasInvalidIntegerInput = allFilled && !allIntegers;
 
@@ -339,8 +347,8 @@ function ModPowCalculator() {
                     className="text-xs font-mono-cf mt-2"
                     style={{ color: "#c0392b" }}
                 >
-                    ⚠ Decimal values aren't valid here — base, exponent, and mod
-                    must all be whole numbers.
+                    ⚠ Use an integer base, a non-negative integer exponent, and
+                    a positive integer modulus.
                 </p>
             )}
 
@@ -358,18 +366,18 @@ function ModPowCalculator() {
                 ) : (
                     <span style={{ color: "var(--muted)" }}>
                         Enter base, exponent, and mod (mod ≥ 1, whole numbers
-                        only).
+                        only; base may be negative).
                     </span>
                 )}
             </div>
 
-            {b !== null && b > BigInt(INT_MAX) && (
+            {b !== null && (b < INT_MIN_BIG || b > INT_MAX_BIG) && (
                 <p
                     className="text-xs font-mono-cf mt-1.5"
                     style={{ color: "#c0392b" }}
                 >
-                    ⚠ Base exceeds INT_MAX — in C++ you'd need long long for
-                    this base.
+                    ⚠ Base is outside signed int range — in C++ you'd need long
+                    long for this base.
                 </p>
             )}
         </div>
@@ -396,6 +404,7 @@ function NumberTheoryContent() {
         const parsed = [];
         let hadFloat = false;
         let hadInvalid = false;
+        let hadUnsafe = false;
 
         for (const part of parts) {
             const n = Number(part);
@@ -407,8 +416,8 @@ function NumberTheoryContent() {
                 hadFloat = true;
                 continue;
             }
-            if (n < 0) {
-                hadInvalid = true;
+            if (!Number.isSafeInteger(n)) {
+                hadUnsafe = true;
                 continue;
             }
             parsed.push(n);
@@ -418,9 +427,13 @@ function NumberTheoryContent() {
             setError(
                 "Decimal numbers aren't supported here — only whole numbers. Decimals were skipped.",
             );
+        } else if (hadUnsafe) {
+            setError(
+                "Some entries are outside JavaScript's safe integer range — they were skipped to avoid wrong factorization or divisor results.",
+            );
         } else if (hadInvalid) {
             setError(
-                "Some entries weren't valid non-negative whole numbers — they were skipped.",
+                "Some entries weren't valid whole numbers — they were skipped.",
             );
         } else {
             setError("");

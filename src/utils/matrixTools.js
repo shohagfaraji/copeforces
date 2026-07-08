@@ -3,12 +3,31 @@ export function parseMatrix(text) {
         .split("\n")
         .map((line) => line.trim())
         .filter((line) => line.length > 0)
-        .map((line) =>
-            line
-                .split(/\s+/)
-                .map(Number)
-                .filter((n) => !Number.isNaN(n)),
-        );
+        .map((line) => line.split(/\s+/).map(Number));
+}
+
+export function parseIntegerMatrix(text) {
+    const matrix = text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => line.split(/\s+/));
+
+    if (matrix.length === 0) return { matrix: [] };
+    if (!isRectangular(matrix))
+        return { error: "Matrix rows must have equal length" };
+
+    for (const row of matrix) {
+        for (const value of row) {
+            if (!/^[+-]?\d+$/.test(value)) {
+                return {
+                    error: "Matrix multiplication and exponentiation require integer cells",
+                };
+            }
+        }
+    }
+
+    return { matrix };
 }
 
 export function parseGrid(text) {
@@ -22,7 +41,14 @@ export function parseGrid(text) {
 export function isRectangular(matrix) {
     if (matrix.length === 0) return false;
     const width = matrix[0].length;
-    return matrix.every((row) => row.length === width);
+    return width > 0 && matrix.every((row) => row.length === width);
+}
+
+export function isNumericMatrix(matrix) {
+    return (
+        isRectangular(matrix) &&
+        matrix.every((row) => row.every((value) => Number.isFinite(value)))
+    );
 }
 
 export function transposeMatrix(matrix) {
@@ -119,15 +145,34 @@ export function multiplyMatricesBig(a, b, mod = null) {
     const rowsB = b.length;
     const colsB = b[0]?.length || 0;
 
+    if (!isRectangular(a) || !isRectangular(b)) {
+        return { error: "Matrix rows must have equal length" };
+    }
+
     if (colsA !== rowsB) {
         return {
             error: `Dimension mismatch: A is ${rowsA}x${colsA}, B is ${rowsB}x${colsB}`,
         };
     }
 
-    const modBig = mod != null ? BigInt(mod) : null;
-    const A = a.map((row) => row.map((x) => BigInt(x)));
-    const B = b.map((row) => row.map((x) => BigInt(x)));
+    let modBig;
+    try {
+        modBig = mod != null && mod !== "" ? BigInt(mod) : null;
+    } catch {
+        return { error: "Mod must be a positive integer" };
+    }
+    if (modBig !== null && modBig <= 0n) {
+        return { error: "Mod must be a positive integer" };
+    }
+
+    let A;
+    let B;
+    try {
+        A = a.map((row) => row.map((x) => BigInt(x)));
+        B = b.map((row) => row.map((x) => BigInt(x)));
+    } catch {
+        return { error: "Matrix multiplication requires integer cells" };
+    }
 
     const result = Array.from({ length: rowsA }, () =>
         new Array(colsB).fill(0n),
@@ -160,14 +205,35 @@ export function matrixPowerBig(matrix, power, mod = null) {
         return { error: "Matrix exponentiation requires a square matrix" };
     }
 
-    if (power < 0) {
+    let p;
+    try {
+        p = BigInt(power);
+    } catch {
         return { error: "Power must be a non-negative integer" };
     }
 
-    const modBig = mod != null ? BigInt(mod) : null;
-    let base = matrix.map((row) => row.map((x) => BigInt(x)));
+    if (p < 0n) {
+        return { error: "Power must be a non-negative integer" };
+    }
+
+    let modBig;
+    try {
+        modBig = mod != null && mod !== "" ? BigInt(mod) : null;
+    } catch {
+        return { error: "Mod must be a positive integer" };
+    }
+    if (modBig !== null && modBig <= 0n) {
+        return { error: "Mod must be a positive integer" };
+    }
+
+    let base;
+    try {
+        base = matrix.map((row) => row.map((x) => BigInt(x)));
+    } catch {
+        return { error: "Matrix exponentiation requires integer cells" };
+    }
+
     let result = identityMatrixBig(n);
-    let p = power;
 
     const multiply = (X, Y) => {
         const R = Array.from({ length: n }, () => new Array(n).fill(0n));
@@ -184,10 +250,10 @@ export function matrixPowerBig(matrix, power, mod = null) {
         return R;
     };
 
-    while (p > 0) {
-        if (p & 1) result = multiply(result, base);
+    while (p > 0n) {
+        if (p % 2n === 1n) result = multiply(result, base);
         base = multiply(base, base);
-        p >>= 1;
+        p /= 2n;
     }
 
     return { matrix: result.map((row) => row.map((x) => x.toString())) };
@@ -205,6 +271,10 @@ const FOUR_DIRS = [
 export function floodFill(grid, sr, sc, newChar) {
     const rows = grid.length;
     const cols = grid[0]?.length || 0;
+
+    if (!isRectangular(grid)) {
+        return { error: "Grid rows must have equal length" };
+    }
 
     if (sr < 0 || sr >= rows || sc < 0 || sc >= cols) {
         return { error: "Start cell is outside the grid" };
@@ -248,6 +318,10 @@ export function gridBFS(grid, sr, sc, wallChar = "#") {
     const rows = grid.length;
     const cols = grid[0]?.length || 0;
     const dist = Array.from({ length: rows }, () => new Array(cols).fill(-1));
+
+    if (!isRectangular(grid)) {
+        return { error: "Grid rows must have equal length" };
+    }
 
     if (
         sr < 0 ||
@@ -293,6 +367,10 @@ export function gridDFS(grid, sr, sc, wallChar = "#") {
     const rows = grid.length;
     const cols = grid[0]?.length || 0;
     const order = Array.from({ length: rows }, () => new Array(cols).fill(-1));
+
+    if (!isRectangular(grid)) {
+        return { error: "Grid rows must have equal length" };
+    }
 
     if (
         sr < 0 ||
