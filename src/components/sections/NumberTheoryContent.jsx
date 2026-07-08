@@ -292,26 +292,30 @@ function LabeledInput({ label, value, onChange, width = "w-32" }) {
     );
 }
 
+function parseWholeNumberInput(value) {
+    const trimmed = value.trim();
+    if (!/^\d+$/.test(trimmed)) return null;
+    return BigInt(trimmed);
+}
+
 function ModPowCalculator() {
     const [base, setBase] = useState("");
     const [exponent, setExponent] = useState("");
     const [mod, setMod] = useState("");
 
-    const b = Number(base);
-    const e = Number(exponent);
-    const m = Number(mod);
-
     const allFilled = base !== "" && exponent !== "" && mod !== "";
-    const allIntegers =
-        Number.isInteger(b) && Number.isInteger(e) && Number.isInteger(m);
-    const inRange = b >= 0 && e >= 0 && m >= 1;
+    const b = parseWholeNumberInput(base);
+    const e = parseWholeNumberInput(exponent);
+    const m = parseWholeNumberInput(mod);
+    const allIntegers = b !== null && e !== null && m !== null;
+    const inRange = b !== null && e !== null && m !== null && m >= 1n;
     const valid = allFilled && allIntegers && inRange;
 
-    const hasFloatInput =
-        allFilled &&
-        (!Number.isInteger(b) || !Number.isInteger(e) || !Number.isInteger(m));
+    const hasInvalidIntegerInput = allFilled && !allIntegers;
 
-    const result = valid ? modPow(b, e, m) : null;
+    const result = valid
+        ? modPow(base.trim(), exponent.trim(), mod.trim())
+        : null;
 
     return (
         <div>
@@ -330,7 +334,7 @@ function ModPowCalculator() {
                 />
             </div>
 
-            {hasFloatInput && (
+            {hasInvalidIntegerInput && (
                 <p
                     className="text-xs font-mono-cf mt-2"
                     style={{ color: "#c0392b" }}
@@ -359,7 +363,7 @@ function ModPowCalculator() {
                 )}
             </div>
 
-            {b > INT_MAX && (
+            {b !== null && b > BigInt(INT_MAX) && (
                 <p
                     className="text-xs font-mono-cf mt-1.5"
                     style={{ color: "#c0392b" }}
