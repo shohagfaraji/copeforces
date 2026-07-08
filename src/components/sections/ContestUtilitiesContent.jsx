@@ -18,6 +18,7 @@ import {
     toRoman,
     fromRoman,
     evaluateExpression,
+    fastCalculate,
     binaryCalculate,
     bigIntCalculate,
     compareFloatAddition,
@@ -262,31 +263,13 @@ function FastCalculatorTool() {
     const [b, setB] = useState("5");
     const [copiedKey, setCopiedKey] = useState(null);
 
-    const numA = Number(a);
-    const numB = Number(b);
-    const valid =
-        a.trim() !== "" &&
-        b.trim() !== "" &&
-        Number.isFinite(numA) &&
-        Number.isFinite(numB);
+    const calculation = fastCalculate(a, b);
+    const valid = calculation.valid;
+    const ops = calculation.ops || [];
 
-    const ops = valid
-        ? [
-              ["a + b", numA + numB],
-              ["a − b", numA - numB],
-              ["a × b", numA * numB],
-              ["a ÷ b", numB !== 0 ? numA / numB : "÷0"],
-              ["a mod b", numB !== 0 ? numA % numB : "÷0"],
-              ["a ^ b", Math.pow(numA, numB)],
-          ]
-        : [];
-
-    const displayValue = (val) =>
-        typeof val === "number" ? Number(val.toFixed(6)).toString() : val;
-
-    const copyOp = async (label, val) => {
+    const copyOp = async (label, value) => {
         try {
-            await navigator.clipboard.writeText(String(displayValue(val)));
+            await navigator.clipboard.writeText(String(value));
             setCopiedKey(label);
             window.setTimeout(() => setCopiedKey(null), 1000);
         } catch {
@@ -348,39 +331,49 @@ function FastCalculatorTool() {
                             Enter valid numbers.
                         </p>
                     ) : (
-                        <div className="grid grid-cols-2 gap-2">
-                            {ops.map(([label, val]) => (
-                                <button
-                                    type="button"
-                                    key={label}
-                                    onClick={() => copyOp(label, val)}
-                                    className="cf-pill text-left rounded-md border p-2"
-                                    style={{ borderColor: "var(--line)" }}
-                                    title="Copy value"
-                                >
-                                    <div
-                                        className="text-[11px] flex items-center justify-between gap-1"
-                                        style={{ color: "var(--muted)" }}
+                        <>
+                            <div className="grid grid-cols-2 gap-2">
+                                {ops.map(({ label, value }) => (
+                                    <button
+                                        type="button"
+                                        key={label}
+                                        onClick={() => copyOp(label, value)}
+                                        className="cf-pill text-left rounded-md border p-2"
+                                        style={{ borderColor: "var(--line)" }}
+                                        title="Copy value"
                                     >
-                                        {label}
-                                        {copiedKey === label ? (
-                                            <FaCheck
-                                                size={9}
-                                                style={{ color: OK_COLOR }}
-                                            />
-                                        ) : (
-                                            <FaCopy
-                                                size={9}
-                                                className="opacity-0 cf-copy-hint"
-                                            />
-                                        )}
-                                    </div>
-                                    <div className="font-mono-cf font-bold text-base break-all">
-                                        {displayValue(val)}
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
+                                        <div
+                                            className="text-[11px] flex items-center justify-between gap-1"
+                                            style={{ color: "var(--muted)" }}
+                                        >
+                                            {label}
+                                            {copiedKey === label ? (
+                                                <FaCheck
+                                                    size={9}
+                                                    style={{ color: OK_COLOR }}
+                                                />
+                                            ) : (
+                                                <FaCopy
+                                                    size={9}
+                                                    className="opacity-0 cf-copy-hint"
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="font-mono-cf font-bold text-base break-all">
+                                            {value}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                            <p
+                                className="text-[11px] mt-3"
+                                style={{ color: "var(--muted)" }}
+                            >
+                                {calculation.exact
+                                    ? "Using exact decimal arithmetic with full-digit output."
+                                    : "Enter valid finite decimal numbers."}
+                            </p>
+                        </>
                     )}
                 </div>
             </div>
