@@ -222,6 +222,378 @@ export function evaluateExpression(expr) {
     return { result: evalStack[0] };
 }
 
+const FORMULA_IDENTIFIER_RE = /[A-Za-z_][A-Za-z0-9_]*/g;
+const FORMULA_INTEGER_RE = /^[+-]?\d+$/;
+const FORMULA_PRECEDENCE = {
+    "+": 1,
+    "-": 1,
+    "*": 2,
+    "/": 2,
+    "%": 2,
+    "^": 3,
+    "u+": 4,
+    "u-": 4,
+};
+const FORMULA_RIGHT_ASSOCIATIVE = new Set(["^", "u+", "u-"]);
+const MAX_FORMULA_EXPONENT = 10000n;
+
+export function extractFormulaVariables(expr) {
+    const seen = new Set();
+    const variables = [];
+    for (const match of String(expr).matchAll(FORMULA_IDENTIFIER_RE)) {
+        const name = match[0];
+        if (name.toLowerCase() === "mod") continue;
+        if (!seen.has(name)) {
+            seen.add(name);
+            variables.push(name);
+        }
+    }
+    return variables;
+}
+
+function gcdBigInt(a, b) {
+    let x = a < 0n ? -a : a;
+    let y = b < 0n ? -b : b;
+    while (y !== 0n) {
+        const next = x % y;
+        x = y;
+        y = next;
+    }
+    return x;
+}
+
+function normalizeRational(numerator, denominator = 1n) {
+    if (denominator === 0n) return null;
+    let n = numerator;
+    let d = denominator;
+    if (d < 0n) {
+        n = -n;
+        d = -d;
+    }
+    const g = gcdBigInt(n, d);
+    return { n: n / g, d: d / g };
+}
+
+function parseFormulaInteger(value) {
+    const clean = String(value).trim();
+    if (!FORMULA_INTEGER_RE.test(clean)) return null;
+    return BigInt(clean);
+}
+
+function addRational(a, b) {
+    return normalizeRational(a.n * b.d + b.n * a.d, a.d * b.d);
+}
+
+function subtractRational(a, b) {
+    return normalizeRational(a.n * b.d - b.n * a.d, a.d * b.d);
+}
+
+function multiplyRational(a, b) {
+    return normalizeRational(a.n * b.n, a.d * b.d);
+}
+
+function divideRational(a, b) {
+    if (b.n === 0n) return { error: "division by zero" };
+    return normalizeRational(a.n * b.d, a.d * b.n);
+}
+
+function normalizedModulo(value, mod) {
+    const positiveMod = mod < 0n ? -mod : mod;
+    const result = value % positiveMod;
+    return result < 0n ? result + positiveMod : result;
+}
+
+function moduloRational(a, b) {
+    if (a.d !== 1n || b.d !== 1n) {
+        return { error: "modulo requires integer operands" };
+    }
+    if (b.n === 0n) return { error: "division by zero" };
+    return normalizeRational(normalizedModulo(a.n, b.n), 1n);
+}
+
+function powerRational(a, b) {
+    if (b.d !== 1n) return { error: "exponent must be an integer" };
+    if (b.n > MAX_FORMULA_EXPONENT || b.n < -MAX_FORMULA_EXPONENT) {
+        return { error: "exponent too large" };
+    }
+    if (a.n === 0n && b.n < 0n) return { error: "division by zero" };
+
+    const exponent = b.n < 0n ? -b.n : b.n;
+    const numerator = a.n ** exponent;
+    const denominator = a.d ** exponent;
+    return b.n < 0n
+        ? normalizeRational(denominator, numerator)
+        : normalizeRational(numerator, denominator);
+}
+
+function tokenizeFormula(expr) {
+    const tokens = [];
+    let i = 0;
+    let expectOperand = true;
+
+    while (i < expr.length) {
+        const c = expr[i];
+        if (/\s/.test(c)) {
+            i++;
+            continue;
+        }
+
+        if (/\d/.test(c)) {
+            if (!expectOperand) return { error: "missing operator" };
+            let value = "";
+            while (i < expr.length && /\d/.test(expr[i])) {
+                value += expr[i];
+                i++;
+            }
+            tokens.push({ type: "num", value });
+            expectOperand = false;
+            continue;
+        }
+
+        if (/[A-Za-z_]/.test(c)) {
+            let name = "";
+            while (i < expr.length && /[A-Za-z0-9_]/.test(expr[i])) {
+                name += expr[i];
+                i++;
+            }
+
+            if (name.toLowerCase() === "mod" && !expectOperand) {
+                tokens.push({ type: "op", value: "%" });
+                expectOperand = true;
+            } else {
+                if (!expectOperand) return { error: "missing operator" };
+                tokens.push({ type: "var", value: name });
+                expectOperand = false;
+            }
+            continue;
+        }
+
+        if (c === "(") {
+            if (!expectOperand) return { error: "missing operator" };
+            tokens.push({ type: "paren", value: c });
+            expectOperand = true;
+            i++;
+            continue;
+        }
+
+        if (c === ")") {
+            if (expectOperand) return { error: "missing operand" };
+            tokens.push({ type: "paren", value: c });
+            expectOperand = false;
+            i++;
+            continue;
+        }
+
+        if ("+-*/%^".includes(c)) {
+            if (expectOperand) {
+                if (c !== "+" && c !== "-") return { error: "missing operand" };
+                tokens.push({ type: "op", value: c === "-" ? "u-" : "u+" });
+            } else {
+                tokens.push({ type: "op", value: c });
+                expectOperand = true;
+            }
+            i++;
+            continue;
+        }
+
+        return { error: `unsupported character "${c}"` };
+    }
+
+    if (tokens.length === 0) return { error: "enter a formula" };
+    if (expectOperand) return { error: "missing operand" };
+    return { tokens };
+}
+
+function formulaToRpn(tokens) {
+    const output = [];
+    const opStack = [];
+
+    for (const token of tokens) {
+        if (token.type === "num" || token.type === "var") {
+            output.push(token);
+        } else if (token.type === "paren" && token.value === "(") {
+            opStack.push(token.value);
+        } else if (token.type === "paren" && token.value === ")") {
+            while (opStack.length && opStack[opStack.length - 1] !== "(") {
+                output.push({ type: "op", value: opStack.pop() });
+            }
+            if (opStack.length === 0)
+                return { error: "mismatched parentheses" };
+            opStack.pop();
+        } else if (token.type === "op") {
+            while (
+                opStack.length &&
+                opStack[opStack.length - 1] !== "(" &&
+                (FORMULA_RIGHT_ASSOCIATIVE.has(token.value)
+                    ? FORMULA_PRECEDENCE[opStack[opStack.length - 1]] >
+                      FORMULA_PRECEDENCE[token.value]
+                    : FORMULA_PRECEDENCE[opStack[opStack.length - 1]] >=
+                      FORMULA_PRECEDENCE[token.value])
+            ) {
+                output.push({ type: "op", value: opStack.pop() });
+            }
+            opStack.push(token.value);
+        }
+    }
+
+    while (opStack.length) {
+        const op = opStack.pop();
+        if (op === "(") return { error: "mismatched parentheses" };
+        output.push({ type: "op", value: op });
+    }
+
+    return { output };
+}
+
+function evaluateFormulaRpn(rpn, variableValues) {
+    const stack = [];
+    for (const token of rpn) {
+        if (token.type === "num") {
+            stack.push(normalizeRational(BigInt(token.value), 1n));
+            continue;
+        }
+
+        if (token.type === "var") {
+            const parsed = parseFormulaInteger(variableValues[token.value]);
+            if (parsed === null) {
+                return { error: `${token.value} must be an integer` };
+            }
+            stack.push(normalizeRational(parsed, 1n));
+            continue;
+        }
+
+        if (token.value === "u+" || token.value === "u-") {
+            const a = stack.pop();
+            if (!a) return { error: "invalid formula" };
+            stack.push(token.value === "u-" ? normalizeRational(-a.n, a.d) : a);
+            continue;
+        }
+
+        const b = stack.pop();
+        const a = stack.pop();
+        if (!a || !b) return { error: "invalid formula" };
+
+        let result;
+        switch (token.value) {
+            case "+":
+                result = addRational(a, b);
+                break;
+            case "-":
+                result = subtractRational(a, b);
+                break;
+            case "*":
+                result = multiplyRational(a, b);
+                break;
+            case "/":
+                result = divideRational(a, b);
+                break;
+            case "%":
+                result = moduloRational(a, b);
+                break;
+            case "^":
+                result = powerRational(a, b);
+                break;
+            default:
+                return { error: "unknown operator" };
+        }
+
+        if (result?.error) return result;
+        stack.push(result);
+    }
+
+    if (stack.length !== 1) return { error: "invalid formula" };
+    return { result: stack[0] };
+}
+
+function formatRational(value) {
+    return value.d === 1n ? value.n.toString() : `${value.n}/${value.d}`;
+}
+
+function formatRationalDecimal(value, maxFractionDigits = 40) {
+    if (value.d === 1n) return null;
+    const negative = value.n < 0n;
+    let dividend = negative ? -value.n : value.n;
+    const integerPart = dividend / value.d;
+    let remainder = dividend % value.d;
+    let fraction = "";
+
+    for (let i = 0; i < maxFractionDigits && remainder !== 0n; i++) {
+        remainder *= 10n;
+        fraction += (remainder / value.d).toString();
+        remainder %= value.d;
+    }
+
+    return `${negative ? "-" : ""}${integerPart}.${fraction}${remainder === 0n ? "" : "..."}`;
+}
+
+function extendedGcd(a, b) {
+    let oldR = a;
+    let r = b;
+    let oldS = 1n;
+    let s = 0n;
+    while (r !== 0n) {
+        const quotient = oldR / r;
+        [oldR, r] = [r, oldR - quotient * r];
+        [oldS, s] = [s, oldS - quotient * s];
+    }
+    return { gcd: oldR < 0n ? -oldR : oldR, x: oldS };
+}
+
+function modularInverse(value, mod) {
+    const { gcd, x } = extendedGcd(normalizedModulo(value, mod), mod);
+    if (gcd !== 1n) return null;
+    return normalizedModulo(x, mod);
+}
+
+function rationalModulo(value, mod) {
+    const inverse = modularInverse(value.d, mod);
+    if (inverse === null) return null;
+    return normalizedModulo(normalizedModulo(value.n, mod) * inverse, mod);
+}
+
+export function evaluateFormula(expression, variableValues = {}, modulo = "") {
+    const variables = extractFormulaVariables(expression);
+    for (const name of variables) {
+        const raw = variableValues[name] ?? "";
+        if (String(raw).trim() === "") {
+            return { variables, error: `Enter value for ${name}` };
+        }
+    }
+
+    const tokenized = tokenizeFormula(String(expression));
+    if (tokenized.error) return { variables, error: tokenized.error };
+    const rpn = formulaToRpn(tokenized.tokens);
+    if (rpn.error) return { variables, error: rpn.error };
+    const evaluated = evaluateFormulaRpn(rpn.output, variableValues);
+    if (evaluated.error) return { variables, error: evaluated.error };
+
+    const result = evaluated.result;
+    const response = {
+        variables,
+        result: formatRational(result),
+        decimal: formatRationalDecimal(result),
+        digits: result.n.toString().replace("-", "").length,
+    };
+
+    const cleanModulo = String(modulo).trim();
+    if (cleanModulo !== "") {
+        const parsedModulo = parseFormulaInteger(cleanModulo);
+        if (parsedModulo === null || parsedModulo <= 0n) {
+            response.moduloError = "mod must be a positive integer";
+        } else {
+            const moduloResult = rationalModulo(result, parsedModulo);
+            if (moduloResult === null) {
+                response.moduloError =
+                    "division has no modular inverse for this mod";
+            } else {
+                response.modulo = moduloResult.toString();
+            }
+        }
+    }
+
+    return response;
+}
+
 function pow10(exp) {
     return 10n ** BigInt(exp);
 }

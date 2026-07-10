@@ -27,6 +27,7 @@ const daysAgoISO = (days) => {
 };
 
 const EMPTY = "-";
+const EMPTY_RANGE = {};
 
 function countryName(code) {
     if (!code || code === "XX") return "Unknown";
@@ -49,6 +50,33 @@ function countryFlag(code) {
         .split("")
         .map((letter) => String.fromCodePoint(127397 + letter.charCodeAt(0)))
         .join("");
+}
+
+function countryFlagImage(code) {
+    const normalized = String(code || "")
+        .trim()
+        .toLowerCase();
+    if (!/^[a-z]{2}$/.test(normalized) || normalized === "xx") return null;
+    return `https://flagcdn.com/w80/${normalized}.png`;
+}
+
+function normalizeCountryCode(country) {
+    return String(
+        country?.country_code ||
+            country?.countryCode ||
+            country?.code ||
+            country?.country ||
+            "XX",
+    )
+        .trim()
+        .toUpperCase();
+}
+
+function normalizeCountryViews(country) {
+    const views = Number(
+        country?.views ?? country?.visits ?? country?.count ?? country?.total,
+    );
+    return Number.isFinite(views) ? views : 0;
 }
 
 function formatNumber(value) {
@@ -158,6 +186,34 @@ function CustomTooltip({ active, payload, label }) {
     );
 }
 
+function CountryFlag({ code }) {
+    const [failed, setFailed] = useState(false);
+    const imageSrc = countryFlagImage(code);
+    const fallback = countryFlag(code);
+
+    return (
+        <span
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white text-xl shadow-sm dark:border-white/10 dark:bg-white/[0.06]"
+            aria-hidden="true"
+        >
+            {imageSrc && !failed ? (
+                <img
+                    src={imageSrc}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    onError={() => setFailed(true)}
+                />
+            ) : (
+                <span className="text-base font-semibold text-slate-500 dark:text-slate-400">
+                    {fallback}
+                </span>
+            )}
+        </span>
+    );
+}
+
 export default function Stats() {
     const { theme, toggleTheme } = useTheme();
     const [from, setFrom] = useState(daysAgoISO(30));
@@ -209,15 +265,43 @@ export default function Stats() {
     );
 
     const ov = data?.overview || {};
-    const rg = data?.range || {};
+    const rg = data?.range || EMPTY_RANGE;
     const highestDay = normalizeDay(rg.highestDay);
     const lowestDay = normalizeDay(rg.lowestDay);
-    const topCountries = rg.topCountries || [];
+    const countriesInRange = useMemo(() => {
+        const source =
+            rg.allCountries ||
+            rg.countries ||
+            rg.countryBreakdown ||
+            rg.topCountries ||
+            [];
+
+        return source
+            .map((country) => ({
+                ...country,
+                country_code: normalizeCountryCode(country),
+                views: normalizeCountryViews(country),
+            }))
+            .filter((country) => country.views >= 1)
+            .sort((a, b) => {
+                if (b.views !== a.views) return b.views - a.views;
+                return countryName(a.country_code).localeCompare(
+                    countryName(b.country_code),
+                );
+            });
+    }, [rg]);
     const hasChartData = chartData.length > 0;
     const isDark = theme === "dark";
     const chartGrid = isDark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.08)";
     const chartTick = isDark ? "#94a3b8" : "#64748b";
     const activeDotStroke = isDark ? "#ffffff" : "#f8fafc";
+    const yAxisWidth = useMemo(() => {
+        const maxViews = Math.max(0, ...chartData.map((day) => day.views));
+        return Math.min(
+            96,
+            Math.max(58, formatNumber(maxViews).length * 8 + 24),
+        );
+    }, [chartData]);
 
     return (
         <main className="min-h-screen bg-slate-50 text-slate-950 dark:bg-[#090b12] dark:text-slate-100">
@@ -397,9 +481,9 @@ export default function Stats() {
                                     data={chartData}
                                     margin={{
                                         top: 12,
-                                        right: 12,
+                                        right: 18,
                                         bottom: 14,
-                                        left: -16,
+                                        left: 6,
                                     }}
                                 >
                                     <CartesianGrid
@@ -417,10 +501,11 @@ export default function Stats() {
                                     />
                                     <YAxis
                                         tick={{ fill: chartTick, fontSize: 12 }}
+                                        tickMargin={8}
                                         axisLine={false}
                                         tickLine={false}
                                         allowDecimals={false}
-                                        width={44}
+                                        width={yAxisWidth}
                                     />
                                     <Tooltip content={<CustomTooltip />} />
                                     <Line
@@ -494,24 +579,15 @@ export default function Stats() {
                     </Panel>
                 </section>
 
-                <Panel title="Top countries in range" icon={FaGlobeAsia}>
+                <Panel title="Countries in range" icon={FaGlobeAsia}>
                     <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                        {topCountries.map((country) => (
+                        {countriesInRange.map((country, index) => (
                             <div
-                                key={
-                                    country.country_code ||
-                                    country.country ||
-                                    "unknown"
-                                }
+                                key={`${country.country_code}-${country.country || "country"}-${index}`}
                                 className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 dark:border-white/10 dark:bg-white/[0.04]"
                             >
                                 <div className="flex min-w-0 items-center gap-3">
-                                    <span
-                                        className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl shadow-sm dark:border-white/10 dark:bg-white/[0.06]"
-                                        aria-hidden="true"
-                                    >
-                                        {countryFlag(country.country_code)}
-                                    </span>
+                                    <CountryFlag code={country.country_code} />
                                     <div className="min-w-0">
                                         <div className="truncate text-sm font-medium text-slate-950 dark:text-white">
                                             {countryName(country.country_code)}
@@ -526,7 +602,7 @@ export default function Stats() {
                                 </div>
                             </div>
                         ))}
-                        {topCountries.length === 0 ? (
+                        {countriesInRange.length === 0 ? (
                             <div className="text-sm text-slate-500 dark:text-slate-400">
                                 No country data in this range yet.
                             </div>

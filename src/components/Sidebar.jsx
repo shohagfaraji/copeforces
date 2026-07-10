@@ -27,17 +27,44 @@ function SectionLinks({ activeSection, collapsed, onNavigate }) {
                             }}
                         >
                             <span
-                                className="font-mono-cf text-[11px] font-bold w-7 text-center rounded-sm py-0.5 flex-shrink-0"
+                                className="relative font-mono-cf text-[11px] font-bold w-7 text-center rounded-sm py-0.5 flex-shrink-0"
                                 style={{
                                     color: section.color,
                                     border: `1px solid ${section.color}`,
                                 }}
                             >
                                 {section.tag}
+                                {collapsed && section.status && (
+                                    <span
+                                        className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border"
+                                        title={section.status}
+                                        aria-label={section.status}
+                                        style={{
+                                            backgroundColor: section.color,
+                                            borderColor: "var(--panel)",
+                                        }}
+                                    />
+                                )}
                             </span>
                             {!collapsed && (
-                                <span className={isActive ? "font-medium" : ""}>
+                                <span
+                                    className={`min-w-0 flex-1 whitespace-nowrap ${
+                                        isActive ? "font-medium" : ""
+                                    }`}
+                                >
                                     {section.title}
+                                </span>
+                            )}
+                            {!collapsed && section.status && (
+                                <span
+                                    className="ml-auto rounded-full border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                                    style={{
+                                        color: section.color,
+                                        borderColor: `${section.color}80`,
+                                        backgroundColor: `${section.color}18`,
+                                    }}
+                                >
+                                    {section.status}
                                 </span>
                             )}
                         </a>
