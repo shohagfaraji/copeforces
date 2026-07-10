@@ -14,7 +14,7 @@
     --accent-violet: #7c3bb9;
     --shadow-soft: 0 16px 40px rgba(23, 23, 23, 0.08);
     --shadow-subtle: 0 1px 2px rgba(23, 23, 23, 0.06);
-    --rail-w-expanded: 224px;
+    --rail-w-expanded: 252px;
     --rail-w-collapsed: 64px;
 }
 
@@ -218,14 +218,63 @@ textarea {
     max-width: 100%;
 }
 
+.cf-trie-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.cf-trie-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.cf-trie-visual-panel {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+}
+
+.cf-trie-scroll {
+    overflow: auto;
+    padding: 0.75rem;
+}
+
+.cf-trie-svg {
+    display: block;
+    width: 100%;
+    max-width: min(var(--trie-width), 72rem);
+    height: auto;
+    margin: 0 auto;
+}
+
 .cf-readable-table th,
 .cf-readable-table td {
     overflow-wrap: anywhere;
 }
 
+@container (min-width: 58rem) {
+    .cf-trie-layout {
+        grid-template-columns: minmax(16rem, 24rem) minmax(0, 1fr);
+    }
+}
+
 @container (max-width: 58rem) {
     .cf-builder-layout {
         grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@container (max-width: 30rem) {
+    .cf-trie-metrics {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cf-trie-scroll {
+        padding: 0.5rem;
     }
 }
 

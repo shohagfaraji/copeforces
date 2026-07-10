@@ -12,15 +12,15 @@ export const RANK_COLORS = [
 ];
 
 const rawSections = [
-    { id: "contest-utilities", title: "Contest Utilities", tag: "CU" },
+    {id: "contest-utilities", title: "Contest Utilities", tag: "CU", status: "Updated" },
     { id: "debug-tools", title: "Debug Tools", tag: "DBG" },
     { id: "test-generator", title: "Test Generator", tag: "GEN" },
-    { id: "strings", title: "Strings", tag: "ST" },
+    { id: "strings", title: "Strings", tag: "ST", status: "Updated" },
     { id: "number-theory", title: "Number Theory", tag: "NT" },
     { id: "matrix", title: "Matrix", tag: "MX" },
     { id: "search", title: "Search", tag: "SR" },
     { id: "trees", title: "Trees", tag: "TR" },
-    { id: "graphs", title: "Graphs", tag: "GR" },
+    { id: "graphs", title: "Graphs", tag: "GR", status: "Updated" },
     { id: "dynamic-programming", title: "Dynamic Programming", tag: "DP" },
     { id: "greedy", title: "Greedy", tag: "GD" },
     { id: "quick-reference", title: "Quick Reference", tag: "REF" },

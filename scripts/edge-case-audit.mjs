@@ -5,6 +5,8 @@ import {
     bigIntCalculate,
     convertBase,
     evaluateExpression,
+    evaluateFormula,
+    extractFormulaVariables,
     fastCalculate,
 } from "../src/utils/contestTools.js";
 import {
@@ -14,11 +16,14 @@ import {
     minCoinChange,
 } from "../src/utils/dpTools.js";
 import {
+    analyzeDegrees,
     bfs,
     buildAdjacency,
+    checkBipartite,
     dfs,
     dijkstra,
     hasCycleDirected,
+    hasCycleUndirected,
     parseEdgeList,
 } from "../src/utils/graphTools.js";
 import {
@@ -112,6 +117,26 @@ function referenceHash(s, base, mod) {
     return Number(hash);
 }
 
+function absBig(value) {
+    return value < 0n ? -value : value;
+}
+
+function gcdBigForTest(a, b) {
+    let x = absBig(a);
+    let y = absBig(b);
+    while (y !== 0n) {
+        [x, y] = [y, x % y];
+    }
+    return x;
+}
+
+function formatFractionForTest(numerator, denominator) {
+    const divisor = gcdBigForTest(numerator, denominator);
+    return denominator / divisor === 1n
+        ? String(numerator / divisor)
+        : `${numerator / divisor}/${denominator / divisor}`;
+}
+
 test("contest utilities handle signed, exact, and invalid inputs", () => {
     assert.equal(convertBase("-ff", 16, 10), "-255");
     assert.equal(convertBase("-", 10, 2), null);
@@ -167,6 +192,90 @@ test("contest utilities handle signed, exact, and invalid inputs", () => {
     assert.equal(binaryCalculate("1010", "0110", "AND").result, "0010");
     assert.equal(bigIntCalculate("-10", "3", "/").result, "-3");
     assert.equal(bigIntCalculate("-10", "3", "%").result, "-1");
+    assert.deepEqual(extractFormulaVariables("((a + b) * (b + c) - d) / 2"), [
+        "a",
+        "b",
+        "c",
+        "d",
+    ]);
+    const formula = evaluateFormula(
+        "((a + b) * (b + c) - d) / 2",
+        { a: "12", b: "8", c: "5", d: "72" },
+        "1000000007",
+    );
+    assert.equal(formula.result, "94");
+    assert.equal(formula.modulo, "94");
+    assert.equal(
+        evaluateFormula("a / b", { a: "1", b: "2" }, "1000000007").modulo,
+        "500000004",
+    );
+    assert.equal(
+        evaluateFormula("(a + b) mod c", { a: "10", b: "8", c: "7" }).result,
+        "4",
+    );
+    assert.equal(
+        evaluateFormula("x + y", {
+            x: "999999999999999999999999999999",
+            y: "1",
+        }).result,
+        "1000000000000000000000000000000",
+    );
+    assert.equal(
+        evaluateFormula("1 / 2", {}, "10").moduloError,
+        "division has no modular inverse for this mod",
+    );
+    const hugeA = 123456789012345678901234567890n;
+    const hugeB = 987654321098765432109876543210n;
+    const hugeC = 111111111111111111111111111111n;
+    const hugeD = 222222222222222222222222222222n;
+    const hugeE = 333333333333333333333333333333n;
+    const hugeNumerator = hugeA * hugeB + hugeC * hugeD - hugeE;
+    assert.equal(
+        evaluateFormula("(a * b + c * d - e) / f", {
+            a: String(hugeA),
+            b: String(hugeB),
+            c: String(hugeC),
+            d: String(hugeD),
+            e: String(hugeE),
+            f: "9",
+        }).result,
+        formatFractionForTest(hugeNumerator, 9n),
+    );
+    const oneThird = evaluateFormula("1 / 3", {}, "1000000007");
+    assert.equal(oneThird.result, "1/3");
+    assert.equal(oneThird.modulo, "333333336");
+    assert.ok(oneThird.decimal.startsWith("0.33333333333333333333"));
+    assert.equal(
+        evaluateFormula("-(a + b) * -c", {
+            a: "7",
+            b: "8",
+            c: "3",
+        }).result,
+        "45",
+    );
+    assert.equal(evaluateFormula("(-a)^b", { a: "2", b: "10" }).result, "1024");
+    assert.equal(
+        evaluateFormula("a^b^c", { a: "2", b: "3", c: "2" }).result,
+        "512",
+    );
+    assert.equal(evaluateFormula("2^-3").result, "1/8");
+    assert.equal(
+        evaluateFormula("(a * b + c) % m", {
+            a: "123456789123456789",
+            b: "987654321987654321",
+            c: "42",
+            m: "1000000007",
+        }).result,
+        String((123456789123456789n * 987654321987654321n + 42n) % 1000000007n),
+    );
+    assert.equal(
+        evaluateFormula("2a + 1", { a: "4" }).error,
+        "missing operator",
+    );
+    assert.equal(
+        evaluateFormula("(a + b", { a: "1", b: "2" }).error,
+        "mismatched parentheses",
+    );
 });
 
 test("number theory avoids precision and signed-boundary bugs", () => {
@@ -386,6 +495,85 @@ test("graph tools handle invalid weights and deep traversals", () => {
             "1",
         ).error,
         "Dijkstra requires finite non-negative edge weights",
+    );
+
+    const triangleNodes = ["1", "2", "3"];
+    const triangleEdges = [
+        { u: "1", v: "2", w: 1 },
+        { u: "2", v: "3", w: 1 },
+        { u: "3", v: "1", w: 1 },
+    ];
+    const triangleAdj = buildAdjacency(triangleNodes, triangleEdges, false);
+    assert.equal(hasCycleUndirected(triangleNodes, triangleAdj), true);
+    const triangleBipartite = checkBipartite(triangleNodes, triangleAdj);
+    assert.equal(triangleBipartite.isBipartite, false);
+    assert.deepEqual(Object.keys(triangleBipartite.conflict).sort(), [
+        "u",
+        "v",
+    ]);
+
+    const bipartiteNodes = ["1", "2", "3", "4"];
+    const bipartiteAdj = buildAdjacency(
+        bipartiteNodes,
+        [
+            { u: "1", v: "2", w: 1 },
+            { u: "1", v: "4", w: 1 },
+            { u: "3", v: "2", w: 1 },
+            { u: "3", v: "4", w: 1 },
+        ],
+        false,
+    );
+    const bipartite = checkBipartite(bipartiteNodes, bipartiteAdj);
+    assert.equal(bipartite.isBipartite, true);
+    assert.equal(bipartite.color["1"], bipartite.color["3"]);
+    assert.notEqual(bipartite.color["1"], bipartite.color["2"]);
+
+    const undirectedDegree = analyzeDegrees(
+        ["1", "2", "3"],
+        [
+            { u: "1", v: "1", w: 1 },
+            { u: "1", v: "2", w: 1 },
+            { u: "1", v: "2", w: 1 },
+            { u: "2", v: "3", w: 1 },
+        ],
+        false,
+    );
+    assert.equal(undirectedDegree.lawHolds, true);
+    assert.equal(undirectedDegree.totalDegree, 8);
+    assert.equal(undirectedDegree.selfLoops, 1);
+    assert.deepEqual(
+        undirectedDegree.rows.map((row) => [row.node, row.degree]),
+        [
+            ["1", 4],
+            ["2", 3],
+            ["3", 1],
+        ],
+    );
+
+    const directedDegree = analyzeDegrees(
+        ["1", "2", "3"],
+        [
+            { u: "1", v: "1", w: 1 },
+            { u: "1", v: "2", w: 1 },
+            { u: "2", v: "1", w: 1 },
+            { u: "2", v: "3", w: 1 },
+        ],
+        true,
+    );
+    assert.equal(directedDegree.lawHolds, true);
+    assert.equal(directedDegree.totalInDegree, 4);
+    assert.equal(directedDegree.totalOutDegree, 4);
+    assert.deepEqual(
+        directedDegree.rows.map((row) => [
+            row.node,
+            row.inDegree,
+            row.outDegree,
+        ]),
+        [
+            ["1", 2, 2],
+            ["2", 1, 2],
+            ["3", 1, 0],
+        ],
     );
 });
 

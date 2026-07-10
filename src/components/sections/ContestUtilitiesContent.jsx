@@ -10,6 +10,7 @@ import {
     FaInfinity,
     FaExclamationTriangle,
     FaRulerCombined,
+    FaSquareRootAlt,
     FaCopy,
     FaCheck,
 } from "react-icons/fa";
@@ -21,6 +22,8 @@ import {
     fastCalculate,
     binaryCalculate,
     bigIntCalculate,
+    evaluateFormula,
+    extractFormulaVariables,
     compareFloatAddition,
 } from "../../utils/contestTools";
 import {
@@ -52,6 +55,7 @@ function hexToRgba(hex, alpha) {
 
 const ERROR_COLOR = "#c0392b";
 const OK_COLOR = "#008000";
+const INTEGER_INPUT_RE = /^[+-]?\d+$/;
 
 //  Shared building blocks
 
@@ -194,7 +198,7 @@ function OutputPanel({ label = "Result", value, error, hint, copyValue }) {
     );
 }
 
-function ToolCard({ id, icon: Icon, label, hint, children }) {
+function ToolCard({ id, icon: Icon, label, hint, badge = "", children }) {
     return (
         <div id={id} className="h-full scroll-mt-20">
             <div
@@ -211,12 +215,26 @@ function ToolCard({ id, icon: Icon, label, hint, children }) {
                     <Icon size={12} />
                 </span>
                 <div className="min-w-0">
-                    <h3
-                        className="font-mono-cf text-xs font-bold uppercase tracking-wider"
-                        style={{ color: "var(--ink)" }}
-                    >
-                        {label}
-                    </h3>
+                    <div className="min-w-0 flex flex-wrap items-center gap-2">
+                        <h3
+                            className="font-mono-cf text-xs font-bold uppercase tracking-wider"
+                            style={{ color: "var(--ink)" }}
+                        >
+                            {label}
+                        </h3>
+                        {badge && (
+                            <span
+                                className="rounded-full border px-1 py-px text-[8px] font-semibold uppercase tracking-wide"
+                                style={{
+                                    color: "var(--sec-accent)",
+                                    borderColor: "var(--sec-accent-soft)",
+                                    backgroundColor: "var(--sec-accent-bg)",
+                                }}
+                            >
+                                {badge}
+                            </span>
+                        )}
+                    </div>
                     {hint && (
                         <p
                             className="text-[11px] mt-0.5 truncate"
@@ -729,6 +747,151 @@ function ExpressionEvaluatorTool() {
     );
 }
 
+function FormulaInput({ label, value, onChange, invalid = false }) {
+    return (
+        <label
+            className="text-xs font-mono-cf block"
+            style={{ color: "var(--muted)" }}
+        >
+            {label}
+            <input
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                spellCheck={false}
+                autoComplete="off"
+                className="block mt-1 w-full p-2 rounded-md border text-sm font-mono-cf outline-none focus:ring-1 transition-colors"
+                style={{
+                    borderColor: invalid ? ERROR_COLOR : "var(--line)",
+                    backgroundColor: "var(--bg)",
+                    color: "var(--ink)",
+                }}
+            />
+        </label>
+    );
+}
+
+function FormulaSolverTool() {
+    const [formula, setFormula] = useState("(a + b) ^ 2");
+    const [values, setValues] = useState({
+        a: "2",
+        b: "3",
+    });
+    const [modulo, setModulo] = useState("1000000007");
+
+    const variables = extractFormulaVariables(formula);
+    const variableValues = variables.reduce((acc, name) => {
+        acc[name] = values[name] ?? "";
+        return acc;
+    }, {});
+    const evaluation = evaluateFormula(formula, variableValues, modulo);
+    const moduloTrimmed = modulo.trim();
+    const moduloInvalid =
+        moduloTrimmed !== "" &&
+        (!INTEGER_INPUT_RE.test(moduloTrimmed) || BigInt(moduloTrimmed) <= 0n);
+
+    const updateValue = (name, value) => {
+        setValues((current) => ({ ...current, [name]: value }));
+    };
+
+    return (
+        <div className="space-y-5">
+            <div className="grid xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] gap-5">
+                <div
+                    className="rounded-lg border p-4 space-y-4"
+                    style={{ borderColor: "var(--line)" }}
+                >
+                    <FormulaInput
+                        label="formula"
+                        value={formula}
+                        onChange={setFormula}
+                        invalid={!!evaluation.error}
+                    />
+
+                    <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                        {variables.map((name) => {
+                            const value = values[name] ?? "";
+                            const invalid =
+                                value.trim() !== "" &&
+                                !INTEGER_INPUT_RE.test(value.trim());
+
+                            return (
+                                <Field
+                                    key={name}
+                                    label={name}
+                                    value={value}
+                                    onChange={(next) => updateValue(name, next)}
+                                    width="w-full"
+                                    invalid={invalid}
+                                />
+                            );
+                        })}
+                        {variables.length === 0 && (
+                            <p
+                                className="text-sm sm:col-span-2 xl:col-span-4"
+                                style={{ color: "var(--muted)" }}
+                            >
+                                Type variable names such as a, b, c to generate
+                                inputs.
+                            </p>
+                        )}
+                    </div>
+
+                    <Field
+                        label="optional final mod"
+                        value={modulo}
+                        onChange={setModulo}
+                        width="w-full sm:w-72"
+                        invalid={moduloInvalid}
+                    />
+
+                    <p className="text-xs" style={{ color: "var(--muted)" }}>
+                        Supports +, -, *, /, %, ^, parentheses, huge integers,
+                        and a mod b syntax.
+                    </p>
+                </div>
+
+                <div
+                    className="rounded-lg border p-4 space-y-3"
+                    style={{ borderColor: "var(--line)" }}
+                >
+                    <h4
+                        className="text-xs font-bold uppercase"
+                        style={{ color: "var(--muted)" }}
+                    >
+                        Output
+                    </h4>
+
+                    {evaluation.error ? (
+                        <OutputPanel error={evaluation.error} />
+                    ) : (
+                        <>
+                            <OutputPanel
+                                label="Exact value"
+                                value={evaluation.result}
+                                hint={
+                                    evaluation.decimal
+                                        ? `decimal preview: ${evaluation.decimal}`
+                                        : `${evaluation.digits} digit${evaluation.digits === 1 ? "" : "s"}`
+                                }
+                                copyValue={evaluation.result}
+                            />
+                            {moduloTrimmed !== "" && (
+                                <OutputPanel
+                                    label={`mod ${moduloTrimmed}`}
+                                    value={evaluation.modulo}
+                                    error={evaluation.moduloError}
+                                    copyValue={evaluation.modulo}
+                                />
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function BigIntCalculatorTool() {
     const [a, setA] = useState("99999999999999999999");
     const [b, setB] = useState("99999999999999999999");
@@ -961,6 +1124,15 @@ const TOOLS = [
         Component: ExpressionEvaluatorTool,
     },
     {
+        id: "cu-formula-solver",
+        label: "Formula evaluator",
+        icon: FaSquareRootAlt,
+        badge: "New",
+        hint: "Variables, huge integers, optional modulo",
+        wide: true,
+        Component: FormulaSolverTool,
+    },
+    {
         id: "cu-bigint-calculator",
         label: "Big integer calculator",
         icon: FaInfinity,
@@ -996,13 +1168,21 @@ function ContestUtilitiesContent() {
             <QuickNav tools={TOOLS} />
 
             <div className="cf-tool-grid">
-                {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
-                        <ToolCard id={id} icon={icon} label={label} hint={hint}>
-                            <Component />
-                        </ToolCard>
-                    </div>
-                ))}
+                {TOOLS.map(
+                    ({ id, label, icon, hint, badge, wide, Component }) => (
+                        <div key={id} className={wide ? "cf-tool-wide" : ""}>
+                            <ToolCard
+                                id={id}
+                                icon={icon}
+                                label={label}
+                                hint={hint}
+                                badge={badge}
+                            >
+                                <Component />
+                            </ToolCard>
+                        </div>
+                    ),
+                )}
             </div>
         </div>
     );

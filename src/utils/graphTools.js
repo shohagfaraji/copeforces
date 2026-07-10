@@ -86,7 +86,7 @@ export function connectedComponents(nodes, adj) {
     return components;
 }
 
-export function isBipartite(nodes, adj) {
+export function checkBipartite(nodes, adj) {
     const color = {};
     for (const start of nodes) {
         if (color[start] !== undefined) continue;
@@ -100,12 +100,20 @@ export function isBipartite(nodes, adj) {
                     color[to] = 1 - color[current];
                     queue.push(to);
                 } else if (color[to] === color[current]) {
-                    return false;
+                    return {
+                        isBipartite: false,
+                        color,
+                        conflict: { u: current, v: to },
+                    };
                 }
             }
         }
     }
-    return true;
+    return { isBipartite: true, color, conflict: null };
+}
+
+export function isBipartite(nodes, adj) {
+    return checkBipartite(nodes, adj).isBipartite;
 }
 
 export function hasCycleUndirected(nodes, adj) {
@@ -165,6 +173,72 @@ export function hasCycleDirected(nodes, adj) {
         }
     }
     return false;
+}
+
+export function analyzeDegrees(nodes, edges, directed) {
+    const stats = {};
+    const ensureNode = (node) => {
+        if (!stats[node]) {
+            stats[node] = {
+                node,
+                degree: 0,
+                inDegree: 0,
+                outDegree: 0,
+            };
+        }
+        return stats[node];
+    };
+
+    nodes.forEach(ensureNode);
+
+    for (const { u, v } of edges) {
+        const from = ensureNode(u);
+        const to = ensureNode(v);
+
+        if (directed) {
+            from.outDegree += 1;
+            to.inDegree += 1;
+        } else if (u === v) {
+            from.degree += 2;
+        } else {
+            from.degree += 1;
+            to.degree += 1;
+        }
+    }
+
+    const rows = Object.values(stats);
+    const edgeCount = edges.length;
+    const selfLoops = edges.filter(({ u, v }) => u === v).length;
+
+    if (directed) {
+        const totalInDegree = rows.reduce((sum, row) => sum + row.inDegree, 0);
+        const totalOutDegree = rows.reduce(
+            (sum, row) => sum + row.outDegree,
+            0,
+        );
+        return {
+            directed: true,
+            rows,
+            edgeCount,
+            selfLoops,
+            totalInDegree,
+            totalOutDegree,
+            lawLabel: "sum in-degree = sum out-degree = |E|",
+            lawHolds:
+                totalInDegree === edgeCount && totalOutDegree === edgeCount,
+        };
+    }
+
+    const totalDegree = rows.reduce((sum, row) => sum + row.degree, 0);
+    return {
+        directed: false,
+        rows,
+        edgeCount,
+        selfLoops,
+        totalDegree,
+        lawLabel: "sum of degrees = 2|E|",
+        lawHolds: totalDegree === 2 * edgeCount,
+    };
 }
 
 export function dijkstra(nodes, adj, start) {
