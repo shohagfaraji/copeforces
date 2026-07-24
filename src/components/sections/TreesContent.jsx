@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { FaTree, FaTable, FaProjectDiagram } from "react-icons/fa";
+import {
+    FaTree,
+    FaTable,
+    FaProjectDiagram,
+    FaRoute,
+} from "react-icons/fa";
 import {
     parseTreeInput,
     buildTreeAdjacency,
@@ -20,17 +25,15 @@ const ACCENT = sections.find((s) => s.id === "trees")?.color || "#03A89E";
 function ToolBlock({
     id,
     label,
+    hint,
     icon: Icon,
     children,
-    wide = false,
     className = "",
 }) {
     return (
         <div
             id={id}
-            className={`cf-tool-card rounded-xl border p-4 h-full ${
-                wide ? "cf-tool-wide" : ""
-            } ${className}`}
+            className={`cf-tool-card rounded-xl border p-4 h-full ${className}`}
             style={{ borderColor: "var(--line)" }}
         >
             <div
@@ -47,12 +50,19 @@ function ToolBlock({
                     <Icon size={12} />
                 </span>
 
-                <h3
-                    className="font-mono-cf text-xs font-bold uppercase tracking-wider"
-                    style={{ color: "var(--muted)" }}
-                >
-                    {label}
-                </h3>
+                <div className="min-w-0">
+                    <h3 className="font-mono-cf text-xs font-bold uppercase tracking-wider">
+                        {label}
+                    </h3>
+                    {hint ? (
+                        <p
+                            className="text-[11px]"
+                            style={{ color: "var(--muted)" }}
+                        >
+                            {hint}
+                        </p>
+                    ) : null}
+                </div>
             </div>
             {children}
         </div>
@@ -86,7 +96,7 @@ function QuickNav({ items }) {
 const TOOLS = [
     {
         id: "tr-tree-input",
-        label: "Tree input",
+        label: "Tree workspace",
         icon: FaTree,
     },
     {
@@ -100,53 +110,47 @@ const TOOLS = [
         icon: FaProjectDiagram,
     },
     {
-        // id: "tr-diameter",
-        id: "tr-lca",
+        id: "tr-diameter",
         label: "Tree diameter",
-        icon: FaProjectDiagram,
+        icon: FaRoute,
     },
 ];
 
 function StatTable({ nodes, depth, sizes, heights }) {
     return (
-        <div className="overflow-x-auto">
-            <table className="font-mono-cf text-xs w-full">
-                <thead>
-                    <tr style={{ color: "var(--muted)" }}>
-                        <th className="text-left py-1 pr-4">node</th>
-                        <th className="text-left py-1 pr-4">depth</th>
-                        <th className="text-left py-1 pr-4">subtree size</th>
-                        <th className="text-left py-1">subtree height</th>
+        <div
+            className="tr-table-shell overflow-x-auto rounded-lg border"
+            style={{ borderColor: "var(--line)" }}
+        >
+            <table className="cf-readable-table tr-stat-table font-mono-cf w-full">
+                <thead className="tr-table-head">
+                    <tr>
+                        <th className="text-left px-3 py-2">Node</th>
+                        <th className="text-left px-3 py-2">Depth</th>
+                        <th className="text-left px-3 py-2">Subtree size</th>
+                        <th className="text-left px-3 py-2">Height</th>
                     </tr>
                 </thead>
                 <tbody>
                     {nodes.map((n) => (
                         <tr
                             key={n}
+                            className="tr-table-row"
                             style={{ borderTop: "1px solid var(--line)" }}
                         >
                             <td
-                                className="py-1 pr-4 font-bold"
-                                style={{ color: "var(--ink)" }}
+                                className="px-3 py-2 font-bold"
+                                style={{ color: "var(--sec-accent)" }}
                             >
                                 {n}
                             </td>
-                            <td
-                                className="py-1 pr-4"
-                                style={{ color: "var(--ink)" }}
-                            >
+                            <td className="px-3 py-2" style={{ color: "var(--ink)" }}>
                                 {depth[n]}
                             </td>
-                            <td
-                                className="py-1 pr-4"
-                                style={{ color: "var(--ink)" }}
-                            >
+                            <td className="px-3 py-2" style={{ color: "var(--ink)" }}>
                                 {sizes[n]}
                             </td>
-                            <td
-                                className="py-1"
-                                style={{ color: "var(--ink)" }}
-                            >
+                            <td className="px-3 py-2" style={{ color: "var(--ink)" }}>
                                 {heights[n]}
                             </td>
                         </tr>
@@ -186,48 +190,61 @@ function TreesContent() {
 
     return (
         <div
+            className="tr-content"
             style={{
                 "--sec-accent": ACCENT,
-                "--sec-accent-soft": ACCENT,
+                "--sec-accent-soft": `${ACCENT}80`,
                 "--sec-accent-bg": `${ACCENT}20`,
             }}
         >
             <QuickNav items={TOOLS} />
-            <div className="cf-tool-grid">
+            <div className="cf-tool-grid tr-tool-grid">
                 <ToolBlock
                     id="tr-tree-input"
                     icon={FaTree}
-                    label="Tree input"
-                    wide
+                    label="Tree workspace"
+                    hint="Edit the edge list, run a traversal, and inspect the tree"
+                    className="tr-tool-builder"
                 >
                     <div className="cf-builder-layout">
-                        <textarea
-                            value={treeText}
-                            onChange={(e) => {
-                                setTreeText(e.target.value);
-                                setNodeStates({});
-                            }}
-                            placeholder={"child parent\nor\nu v (edge)"}
-                            rows={10}
-                            className="cf-builder-textarea p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
-                            style={{
-                                borderColor: "var(--line)",
-                                backgroundColor: "var(--bg)",
-                                color: "var(--ink)",
-                            }}
-                        />
+                        <label
+                            className="tr-input-field font-mono-cf"
+                            style={{ color: "var(--muted)" }}
+                        >
+                            Edge list
+                            <textarea
+                                value={treeText}
+                                onChange={(e) => {
+                                    setTreeText(e.target.value);
+                                    setNodeStates({});
+                                }}
+                                placeholder={"u v\nu v"}
+                                rows={10}
+                                className="cf-builder-textarea mt-1 p-2 rounded-md border font-mono-cf resize-none outline-none focus:ring-1"
+                                style={{
+                                    borderColor: "var(--line)",
+                                    backgroundColor: "var(--bg)",
+                                    color: "var(--ink)",
+                                }}
+                            />
+                        </label>
 
                         <div className="cf-builder-controls">
                             {nodes.length > 0 && (
-                                <p
-                                    className="text-xs font-mono-cf mt-2 mb-3"
-                                    style={{ color: "var(--muted)" }}
+                                <div
+                                    className="tr-tree-summary"
+                                    aria-label="Tree summary"
                                 >
-                                    {nodes.length} node(s), root ={" "}
-                                    <strong style={{ color: "var(--ink)" }}>
-                                        {root}
-                                    </strong>
-                                </p>
+                                    <span>
+                                        <strong>{nodes.length}</strong> nodes
+                                    </span>
+                                    <span>
+                                        <strong>{edges.length}</strong> edges
+                                    </span>
+                                    <span>
+                                        root <strong>{root}</strong>
+                                    </span>
+                                </div>
                             )}
 
                             <AlgorithmRunner
@@ -243,6 +260,39 @@ function TreesContent() {
                                 edges={edges}
                                 directed={false}
                                 nodeStates={nodeStates}
+                                edgeColor="var(--sec-accent)"
+                                stateColors={{
+                                    unvisited: {
+                                        fill: "var(--panel)",
+                                        stroke: "var(--line-strong)",
+                                        text: "var(--muted)",
+                                        strokeWidth: 1.5,
+                                    },
+                                    visiting: {
+                                        fill: "var(--sec-accent)",
+                                        stroke: "var(--sec-accent)",
+                                        text: "#fff",
+                                        strokeWidth: 2.5,
+                                    },
+                                    backtracking: {
+                                        fill: "var(--panel)",
+                                        stroke: "var(--sec-accent)",
+                                        text: "var(--sec-accent)",
+                                        strokeWidth: 4,
+                                    },
+                                    visited: {
+                                        fill: "color-mix(in srgb, var(--sec-accent) 34%, var(--panel))",
+                                        stroke: "var(--sec-accent)",
+                                        text: "var(--ink)",
+                                        strokeWidth: 2.2,
+                                    },
+                                    path: {
+                                        fill: "color-mix(in srgb, var(--sec-accent) 82%, #000)",
+                                        stroke: "var(--sec-accent)",
+                                        text: "#fff",
+                                        strokeWidth: 2.5,
+                                    },
+                                }}
                             />
                         </div>
                     </div>
@@ -251,23 +301,11 @@ function TreesContent() {
                 {nodes.length > 0 && (
                     <>
                         <ToolBlock
-                            id="tr-node-stats"
-                            icon={FaTable}
-                            label="Node stats (depth, subtree size, subtree height)"
-                        >
-                            <StatTable
-                                nodes={nodes}
-                                depth={depth}
-                                sizes={sizes}
-                                heights={heights}
-                            />
-                        </ToolBlock>
-
-                        <ToolBlock
                             id="tr-lca"
                             icon={FaProjectDiagram}
-                            label="Lowest common ancestor and tree diameter"
-                            className="cf-tool-keep-half"
+                            label="Lowest common ancestor"
+                            hint="Compare two nodes in the rooted tree"
+                            className="tr-tool-lca"
                         >
                             <LcaToolWrapper
                                 nodes={nodes}
@@ -275,38 +313,50 @@ function TreesContent() {
                                 depth={depth}
                                 onHighlight={showLcaStates}
                             />
-                            <div id="tr-diameter" className="mt-5">
-                                <button
-                                    onClick={showDiameter}
-                                    className="font-mono-cf text-xs px-3 py-2 rounded-md border hover:opacity-70"
-                                    style={{
-                                        borderColor: "var(--line)",
-                                        color: "var(--accent-blue)",
-                                    }}
-                                >
-                                    Highlight longest path
-                                </button>
-                                <p
-                                    className="text-sm font-mono-cf mt-2"
-                                    style={{ color: "var(--muted)" }}
-                                >
-                                    Diameter (edges):{" "}
-                                    <strong style={{ color: "var(--ink)" }}>
-                                        {diameter.length}
-                                    </strong>
-                                    {diameter.path.length > 0 && (
-                                        <>
-                                            {" "}
-                                            · path:{" "}
-                                            <strong
-                                                style={{ color: "var(--ink)" }}
-                                            >
-                                                {diameter.path.join(" → ")}
-                                            </strong>
-                                        </>
-                                    )}
-                                </p>
+                        </ToolBlock>
+
+                        <ToolBlock
+                            id="tr-diameter"
+                            icon={FaRoute}
+                            label="Tree diameter"
+                            hint="The longest path measured in edges"
+                            className="tr-tool-diameter"
+                        >
+                            <div className="tr-result-panel">
+                                <span>Length</span>
+                                <strong>{diameter.length}</strong>
                             </div>
+                            {diameter.path.length > 0 ? (
+                                <div className="tr-path-output">
+                                    <span>Path</span>
+                                    <strong>
+                                        {diameter.path.join(" → ")}
+                                    </strong>
+                                </div>
+                            ) : null}
+                            <button
+                                type="button"
+                                onClick={showDiameter}
+                                className="tr-primary-button mt-3"
+                            >
+                                <FaRoute aria-hidden="true" />
+                                Highlight diameter
+                            </button>
+                        </ToolBlock>
+
+                        <ToolBlock
+                            id="tr-node-stats"
+                            icon={FaTable}
+                            label="Node stats"
+                            hint="Depth and subtree values from the selected root"
+                            className="tr-tool-stats"
+                        >
+                            <StatTable
+                                nodes={nodes}
+                                depth={depth}
+                                sizes={sizes}
+                                heights={heights}
+                            />
                         </ToolBlock>
                     </>
                 )}
@@ -319,34 +369,36 @@ function LcaToolWrapper({ nodes, parent, depth, onHighlight }) {
     const [a, setA] = useState(nodes[0] || "");
     const [b, setB] = useState(nodes[1] || nodes[0] || "");
 
-    const valid = nodes.includes(a) && nodes.includes(b);
-    const lca = valid ? findLCA(parent, depth, a, b) : null;
+    const selectedA = nodes.includes(a) ? a : nodes[0] || "";
+    const selectedB = nodes.includes(b) ? b : nodes[1] || nodes[0] || "";
+    const valid = nodes.includes(selectedA) && nodes.includes(selectedB);
+    const lca = valid ? findLCA(parent, depth, selectedA, selectedB) : null;
 
     const highlight = () => {
         if (lca === null) return;
-        const pathA = pathToRoot(parent, a);
-        const pathB = pathToRoot(parent, b);
+        const pathA = pathToRoot(parent, selectedA);
+        const pathB = pathToRoot(parent, selectedB);
         const states = {};
         pathA.forEach((n) => (states[n] = "visited"));
         pathB.forEach((n) => (states[n] = "visited"));
+        states[selectedA] = "visiting";
+        states[selectedB] = "visiting";
         states[lca] = "path";
-        states[a] = "visiting";
-        states[b] = "visiting";
         onHighlight(states);
     };
 
     return (
-        <div>
-            <div className="flex gap-3 mb-3 items-end flex-wrap">
+        <div className="tr-lca-tool">
+            <div className="tr-lca-fields">
                 <label
-                    className="text-xs font-mono-cf"
+                    className="font-mono-cf"
                     style={{ color: "var(--muted)" }}
                 >
-                    node A
+                    Node A
                     <select
-                        value={a}
+                        value={selectedA}
                         onChange={(e) => setA(e.target.value)}
-                        className="block mt-1 p-2 rounded-md border font-mono-cf text-sm outline-none"
+                        className="block w-full mt-1 p-2 rounded-md border font-mono-cf outline-none"
                         style={{
                             borderColor: "var(--line)",
                             backgroundColor: "var(--bg)",
@@ -361,14 +413,14 @@ function LcaToolWrapper({ nodes, parent, depth, onHighlight }) {
                     </select>
                 </label>
                 <label
-                    className="text-xs font-mono-cf"
+                    className="font-mono-cf"
                     style={{ color: "var(--muted)" }}
                 >
-                    node B
+                    Node B
                     <select
-                        value={b}
+                        value={selectedB}
                         onChange={(e) => setB(e.target.value)}
-                        className="block mt-1 p-2 rounded-md border font-mono-cf text-sm outline-none"
+                        className="block w-full mt-1 p-2 rounded-md border font-mono-cf outline-none"
                         style={{
                             borderColor: "var(--line)",
                             backgroundColor: "var(--bg)",
@@ -382,28 +434,24 @@ function LcaToolWrapper({ nodes, parent, depth, onHighlight }) {
                         ))}
                     </select>
                 </label>
-                <button
-                    onClick={highlight}
-                    className="font-mono-cf text-xs px-3 py-2 rounded-md border hover:opacity-70"
-                    style={{
-                        borderColor: "var(--line)",
-                        color: "var(--accent-blue)",
-                    }}
-                >
-                    Find LCA
-                </button>
             </div>
+
+            <button
+                type="button"
+                onClick={highlight}
+                className="tr-primary-button"
+            >
+                <FaProjectDiagram aria-hidden="true" />
+                Find and highlight LCA
+            </button>
+
             {lca !== null && (
-                <p
-                    className="text-sm font-mono-cf"
-                    style={{ color: "var(--muted)" }}
-                >
-                    LCA(<strong style={{ color: "var(--ink)" }}>{a}</strong>,{" "}
-                    <strong style={{ color: "var(--ink)" }}>{b}</strong>) ={" "}
-                    <strong style={{ color: "var(--accent-violet)" }}>
-                        {lca}
-                    </strong>
-                </p>
+                <div className="tr-result-panel">
+                    <span>
+                        LCA({selectedA}, {selectedB})
+                    </span>
+                    <strong>{lca}</strong>
+                </div>
             )}
         </div>
     );

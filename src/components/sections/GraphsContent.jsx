@@ -17,9 +17,41 @@ import GraphCanvas from "../GraphCanvas";
 import AlgorithmRunner from "../AlgorithmRunner";
 import { sections } from "../../data/sections";
 
-const ACCENT = sections.find((s) => s.id === "graphs")?.color || "#0000FF";
+const ACCENT = sections.find((s) => s.id === "graphs")?.color || "#AA00AA";
 const ERROR_COLOR = "#c0392b";
 const OK_COLOR = "#008000";
+const GRAPH_STATE_COLORS = {
+    unvisited: {
+        fill: "var(--panel)",
+        stroke: "var(--line-strong)",
+        text: "var(--muted)",
+        strokeWidth: 1.5,
+    },
+    visiting: {
+        fill: "var(--sec-accent)",
+        stroke: "var(--sec-accent)",
+        text: "#fff",
+        strokeWidth: 2.5,
+    },
+    backtracking: {
+        fill: "var(--panel)",
+        stroke: "var(--sec-accent)",
+        text: "var(--sec-accent)",
+        strokeWidth: 4,
+    },
+    visited: {
+        fill: "color-mix(in srgb, var(--sec-accent) 34%, var(--panel))",
+        stroke: "var(--sec-accent)",
+        text: "var(--ink)",
+        strokeWidth: 2.2,
+    },
+    path: {
+        fill: "color-mix(in srgb, var(--sec-accent) 82%, #000)",
+        stroke: "var(--sec-accent)",
+        text: "#fff",
+        strokeWidth: 2.5,
+    },
+};
 
 function ToolBlock({
     id,
@@ -136,7 +168,11 @@ function NodeChips({ nodes, emptyText = "none" }) {
                 <span
                     key={node}
                     className="rounded-md border px-2 py-1 font-mono-cf text-xs"
-                    style={{ borderColor: "var(--line)", color: "var(--ink)" }}
+                    style={{
+                        borderColor: "var(--sec-accent-soft)",
+                        backgroundColor: "var(--sec-accent-bg)",
+                        color: "var(--sec-accent)",
+                    }}
                 >
                     {node}
                 </span>
@@ -222,17 +258,29 @@ function BipartiteTool({ nodes, result }) {
 function StatTile({ label, value, hint, tone = "neutral" }) {
     const toneStyle =
         tone === "ok"
-            ? { borderColor: OK_COLOR, color: OK_COLOR }
+            ? {
+                  borderColor: OK_COLOR,
+                  color: OK_COLOR,
+                  backgroundColor: "rgba(0, 128, 0, 0.07)",
+              }
             : tone === "warn"
-              ? { borderColor: ERROR_COLOR, color: ERROR_COLOR }
-              : { borderColor: "var(--line)", color: "var(--ink)" };
+              ? {
+                    borderColor: ERROR_COLOR,
+                    color: ERROR_COLOR,
+                    backgroundColor: "rgba(192, 57, 43, 0.07)",
+                }
+              : {
+                    borderColor: "var(--sec-accent-soft)",
+                    color: "var(--sec-accent)",
+                    backgroundColor: "var(--sec-accent-bg)",
+                };
 
     return (
         <div
             className="rounded-lg border px-3 py-2.5"
             style={{
                 borderColor: toneStyle.borderColor,
-                backgroundColor: "var(--panel)",
+                backgroundColor: toneStyle.backgroundColor,
             }}
         >
             <div
@@ -358,8 +406,8 @@ function DegreeAnalysisTool({ nodes, directed, analysis }) {
                         <table className="cf-readable-table min-w-full text-left font-mono-cf text-xs">
                             <thead
                                 style={{
-                                    color: "var(--muted)",
-                                    backgroundColor: "var(--panel-soft)",
+                                    color: "var(--sec-accent)",
+                                    backgroundColor: "var(--sec-accent-bg)",
                                 }}
                             >
                                 <tr>
@@ -475,6 +523,7 @@ function GraphsContent() {
 
     return (
         <div
+            className="gr-content"
             style={{
                 "--sec-accent": ACCENT,
                 "--sec-accent-soft": `${ACCENT}80`,
@@ -482,12 +531,12 @@ function GraphsContent() {
             }}
         >
             <QuickNav items={TOOLS} />
-            <div className="cf-tool-grid">
+            <div className="cf-tool-grid gr-tool-grid">
                 <ToolBlock
                     id="gr-graph-builder"
                     icon={FaProjectDiagram}
                     label="Graph builder and traversal"
-                    className="cf-tool-wide"
+                    className="gr-tool-builder"
                 >
                     <div className="cf-builder-layout">
                         <textarea
@@ -546,6 +595,8 @@ function GraphsContent() {
                                 edges={edges}
                                 directed={directed}
                                 nodeStates={nodeStates}
+                                stateColors={GRAPH_STATE_COLORS}
+                                edgeColor="var(--sec-accent)"
                             />
                         </div>
                     </div>
@@ -556,6 +607,7 @@ function GraphsContent() {
                     icon={FaSyncAlt}
                     label="Cycle detection"
                     badge="New"
+                    className="gr-tool-cycle"
                 >
                     <CycleDetectionTool
                         nodes={nodes}
@@ -569,6 +621,7 @@ function GraphsContent() {
                     icon={FaCheckCircle}
                     label="Bipartite check"
                     badge="New"
+                    className="gr-tool-bipartite"
                 >
                     <BipartiteTool nodes={nodes} result={bipartite} />
                 </ToolBlock>
@@ -578,7 +631,7 @@ function GraphsContent() {
                     icon={FaBalanceScale}
                     label="Degree analysis"
                     badge="New"
-                    className="cf-tool-wide"
+                    className="gr-tool-degree"
                 >
                     <DegreeAnalysisTool
                         nodes={nodes}

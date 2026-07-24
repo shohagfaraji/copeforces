@@ -1,5 +1,3 @@
-// Parses edge-list text into a graph object.
-// Each line: "u v" or "u v w" (weighted). Nodes can be any token (numbers or names).
 export function parseEdgeList(text) {
     const lines = text
         .trim()
@@ -295,9 +293,6 @@ export function reconstructPath(prev, start, end) {
     return path.reverse();
 }
 
-// Returns an array of {visiting, visited} snapshots, one per step,
-// suitable for animated playback. "visiting" = the node just reached,
-// "visited" = set of all nodes fully processed before this step.
 export function bfsSteps(adj, start) {
     const steps = [];
     const visited = new Set([start]);

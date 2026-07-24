@@ -1,4 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+    FaPause,
+    FaPlay,
+    FaRedoAlt,
+    FaStepBackward,
+    FaStepForward,
+} from "react-icons/fa";
 import { bfsSteps, dfsSteps } from "../utils/graphTools";
 
 function AlgorithmRunner({ nodes, adj, onStateChange }) {
@@ -141,59 +148,62 @@ function AlgorithmRunner({ nodes, adj, onStateChange }) {
                 </label>
 
                 <button
+                    type="button"
                     onClick={buildSteps}
-                    className="font-mono-cf text-xs px-3 py-2 rounded-md border hover:opacity-70 flex-shrink-0"
-                    style={{
-                        borderColor: "var(--line)",
-                        color: "var(--accent-blue)",
-                    }}
+                    className="gr-run-button flex-shrink-0"
                 >
-                    Run
+                    <FaPlay aria-hidden="true" />
+                    <span>Run</span>
                 </button>
             </div>
 
             {steps.length > 0 && (
                 <div className="flex flex-col gap-2 mb-3">
-                    <div className="grid grid-cols-4 gap-1.5">
+                    <div
+                        className="gr-playback-buttons"
+                        aria-label="Traversal playback controls"
+                    >
                         <button
+                            type="button"
                             onClick={stepBack}
-                            className="font-mono-cf text-[11px] px-2 py-1.5 rounded-md border"
-                            style={{
-                                borderColor: "var(--line)",
-                                color: "var(--muted)",
-                            }}
+                            disabled={stepIndex <= 0}
+                            title="Previous step"
+                            aria-label="Previous step"
                         >
-                            Prev
+                            <FaStepBackward aria-hidden="true" />
                         </button>
                         <button
+                            type="button"
                             onClick={isPlaying ? pause : play}
-                            className="font-mono-cf text-[11px] px-2 py-1.5 rounded-md border"
-                            style={{
-                                borderColor: "var(--line)",
-                                color: "var(--ink)",
-                            }}
+                            className="gr-play-toggle"
+                            title={isPlaying ? "Pause traversal" : "Play traversal"}
+                            aria-label={
+                                isPlaying ? "Pause traversal" : "Play traversal"
+                            }
                         >
-                            {isPlaying ? "Pause" : "Play"}
+                            {isPlaying ? (
+                                <FaPause aria-hidden="true" />
+                            ) : (
+                                <FaPlay aria-hidden="true" />
+                            )}
                         </button>
                         <button
+                            type="button"
                             onClick={stepForward}
-                            className="font-mono-cf text-[11px] px-2 py-1.5 rounded-md border"
-                            style={{
-                                borderColor: "var(--line)",
-                                color: "var(--muted)",
-                            }}
+                            disabled={stepIndex >= steps.length - 1}
+                            title="Next step"
+                            aria-label="Next step"
                         >
-                            Next
+                            <FaStepForward aria-hidden="true" />
                         </button>
                         <button
+                            type="button"
                             onClick={reset}
-                            className="font-mono-cf text-[11px] px-2 py-1.5 rounded-md border"
-                            style={{
-                                borderColor: "var(--line)",
-                                color: "var(--muted)",
-                            }}
+                            disabled={stepIndex <= 0 && !isPlaying}
+                            title="Reset traversal"
+                            aria-label="Reset traversal"
                         >
-                            Reset
+                            <FaRedoAlt aria-hidden="true" />
                         </button>
                     </div>
 

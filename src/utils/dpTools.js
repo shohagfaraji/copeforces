@@ -1,7 +1,3 @@
-// 0/1 Knapsack: items = [{name, value, weight}], capacity = number.
-// Returns the full DP table (rows = items considered so far, cols =
-// capacity used) plus the chosen items, so the table itself can be
-// rendered and the optimal path highlighted.
 export function knapsack01(items, capacity) {
     const cap = Math.trunc(Number(capacity));
     if (!Number.isInteger(cap) || cap < 0) {
@@ -41,8 +37,6 @@ export function knapsack01(items, capacity) {
     return { dp, best: dp[n]?.[cap] ?? 0, taken };
 }
 
-// Longest Common Subsequence: a, b = strings.
-// Returns the full DP table and the reconstructed subsequence.
 export function longestCommonSubsequence(a, b) {
     const n = a.length;
     const m = b.length;
@@ -61,9 +55,15 @@ export function longestCommonSubsequence(a, b) {
     let i = n;
     let j = m;
     const chars = [];
-    while (i > 0 && j > 0) {
+    const matches = [];
+    const path = [];
+    while (true) {
+        path.push([i, j]);
+        if (i === 0 || j === 0) break;
+
         if (a[i - 1] === b[j - 1]) {
             chars.push(a[i - 1]);
+            matches.push([i, j]);
             i--;
             j--;
         } else if (dp[i - 1][j] >= dp[i][j - 1]) {
@@ -74,12 +74,15 @@ export function longestCommonSubsequence(a, b) {
     }
     chars.reverse();
 
-    return { dp, length: dp[n]?.[m] ?? 0, subsequence: chars.join("") };
+    return {
+        dp,
+        length: dp[n]?.[m] ?? 0,
+        subsequence: chars.join(""),
+        path,
+        matches,
+    };
 }
 
-// Coin change (minimum coins) — DP version, contrasted with greedy in
-// the Greedy section. Returns the dp array (min coins for each amount)
-// and the coins actually used for the target.
 export function minCoinChange(denominations, target) {
     const amountTarget = Math.trunc(Number(target));
     if (!Number.isInteger(amountTarget) || amountTarget < 0) {
@@ -116,10 +119,6 @@ export function minCoinChange(denominations, target) {
     return { dp, used, success: true };
 }
 
-// Longest Increasing Subsequence: nums = [number, ...].
-// Returns the dp array (LIS length ending at each index), the
-// reconstructed subsequence, and the indices it came from (needed for
-// correct highlighting when the input has duplicate numbers).
 export function longestIncreasingSubsequence(nums) {
     const n = nums.length;
     if (n === 0) return { dp: [], length: 0, subsequence: [], indices: [] };

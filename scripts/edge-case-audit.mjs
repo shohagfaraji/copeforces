@@ -77,6 +77,14 @@ import {
     zFunction,
 } from "../src/utils/stringTools.js";
 import {
+    createSegmentTree,
+    parseSegmentValues,
+    pointUpdateSegmentTree,
+    querySegmentTree,
+    rangeAddSegmentTree,
+    segmentTreeValues,
+} from "../src/utils/segmentTreeTools.js";
+import {
     buildTreeAdjacency,
     buildTreeStructure,
     findLCA,
@@ -592,6 +600,27 @@ test("tree tools avoid undefined stats on forests", () => {
     const diameter = treeDiameter(nodes, adj);
     assert.equal(diameter.length, 1);
     assert.deepEqual(new Set(diameter.path), new Set(["1", "2"]));
+});
+
+test("segment tree queries and lazy updates stay consistent", () => {
+    assert.deepEqual(parseSegmentValues("5, 2 8").values, [5, 2, 8]);
+    assert.ok(parseSegmentValues("x 2").error);
+
+    let tree = createSegmentTree([5, 2, 8, 6, 1, 3, 7, 4]);
+    assert.equal(querySegmentTree(tree, 2, 6, "sum").value, 25);
+    assert.equal(querySegmentTree(tree, 2, 6, "min").value, 1);
+    assert.equal(querySegmentTree(tree, 2, 6, "max").value, 8);
+
+    tree = rangeAddSegmentTree(tree, 1, 5, 2).tree;
+    assert.deepEqual(segmentTreeValues(tree), [5, 4, 10, 8, 3, 5, 7, 4]);
+    assert.equal(querySegmentTree(tree, 0, 7, "sum").value, 46);
+
+    tree = pointUpdateSegmentTree(tree, 3, -4).tree;
+    assert.deepEqual(segmentTreeValues(tree), [5, 4, 10, -4, 3, 5, 7, 4]);
+    assert.equal(querySegmentTree(tree, 2, 6, "min").value, -4);
+
+    tree = rangeAddSegmentTree(tree, 0, 7, -3).tree;
+    assert.deepEqual(segmentTreeValues(tree), [2, 1, 7, -7, 0, 2, 4, 1]);
 });
 
 test("test generators respect edge-case constraints", () => {

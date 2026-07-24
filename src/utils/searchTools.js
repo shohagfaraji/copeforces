@@ -70,7 +70,6 @@ export function lastOccurrence(arr, target) {
 }
 
 export function findAllOccurrences(arr, target) {
-    // Plain O(n) scan — works regardless of whether arr is sorted.
     const indices = [];
 
     for (let i = 0; i < arr.length; i++) {
@@ -81,9 +80,6 @@ export function findAllOccurrences(arr, target) {
 }
 
 export function binarySearchOnAnswer(lo, hi, predicate) {
-    // Finds the smallest x in [lo, hi] such that predicate(x) is true,
-    // assuming predicate(x) is false...false, true...true (monotonic)
-    // over the range. Returns answer = null if predicate(hi) is false.
     const steps = [];
     if (!Number.isFinite(lo) || !Number.isFinite(hi) || lo > hi) {
         return { answer: null, steps, error: "Invalid search range" };

@@ -16,6 +16,7 @@ import NumberTheoryContent from "./sections/NumberTheoryContent";
 import MatrixContent from "./sections/MatrixContent";
 import SearchContent from "./sections/SearchContent";
 import TreesContent from "./sections/TreesContent";
+import SegmentTreeContent from "./sections/SegmentTreeContent";
 import GraphsContent from "./sections/GraphsContent";
 import DynamicProgrammingContent from "./sections/DynamicProgrammingContent";
 import GreedyContent from "./sections/GreedyContent";
@@ -30,6 +31,7 @@ const SECTION_CONTENT = {
     matrix: MatrixContent,
     search: SearchContent,
     trees: TreesContent,
+    "segment-tree": SegmentTreeContent,
     graphs: GraphsContent,
     "dynamic-programming": DynamicProgrammingContent,
     greedy: GreedyContent,

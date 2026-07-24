@@ -16,8 +16,8 @@ function SectionLinks({ activeSection, collapsed, onNavigate }) {
                             title={section.title}
                             className={
                                 collapsed
-                                    ? "flex items-center justify-center py-2 rounded-md text-sm transition-colors"
-                                    : "flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors"
+                                    ? "cf-sidebar-link flex items-center justify-center py-2 rounded-md transition-colors"
+                                    : "cf-sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors"
                             }
                             style={{
                                 backgroundColor: isActive
@@ -27,7 +27,7 @@ function SectionLinks({ activeSection, collapsed, onNavigate }) {
                             }}
                         >
                             <span
-                                className="relative font-mono-cf text-[11px] font-bold w-7 text-center rounded-sm py-0.5 flex-shrink-0"
+                                className="cf-sidebar-tag relative font-mono-cf font-bold w-8 text-center rounded-sm py-1 flex-shrink-0"
                                 style={{
                                     color: section.color,
                                     border: `1px solid ${section.color}`,
@@ -48,7 +48,7 @@ function SectionLinks({ activeSection, collapsed, onNavigate }) {
                             </span>
                             {!collapsed && (
                                 <span
-                                    className={`min-w-0 flex-1 whitespace-nowrap ${
+                                    className={`min-w-0 flex-1 truncate ${
                                         isActive ? "font-medium" : ""
                                     }`}
                                 >
@@ -57,7 +57,7 @@ function SectionLinks({ activeSection, collapsed, onNavigate }) {
                             )}
                             {!collapsed && section.status && (
                                 <span
-                                    className="ml-auto rounded-full border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                                    className="cf-sidebar-status ml-auto flex-shrink-0 rounded-full border px-1.5 py-0.5 font-semibold uppercase tracking-wide"
                                     style={{
                                         color: section.color,
                                         borderColor: `${section.color}80`,

@@ -101,9 +101,6 @@ export function generateRandomGraph(n, m, options = {}) {
         }
     }
 
-    // Bounded attempts: if the requested edge count is close to (or beyond)
-    // what's actually possible under the no-multi-edge / no-self-loop
-    // constraints, this stops instead of looping forever.
     let attempts = 0;
     const maxAttempts = Math.max(1000, targetEdges * 20);
 
@@ -172,7 +169,6 @@ export function generateRandomQueries(count, n, options = {}) {
 }
 
 export function parseConstraints(text) {
-    // Each line: "name min max", e.g. "n 1 100000"
     return text
         .split("\n")
         .map((line) => line.trim())

@@ -5,8 +5,6 @@ export function smoothScrollTo(
 ) {
     if (!container || !target) return;
 
-    // Cancel any in-flight scroll animation on this container first, so
-    // rapid successive clicks don't fight each other over scrollTop.
     if (container.__smoothScrollFrame) {
         cancelAnimationFrame(container.__smoothScrollFrame);
         container.__smoothScrollFrame = null;

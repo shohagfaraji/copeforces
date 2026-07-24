@@ -53,7 +53,7 @@ function CopyButton({ value }) {
 
             setTimeout(() => setCopied(false), 1200);
         } catch {
-            /* clipboard unavailable */
+            return;
         }
     }
 
@@ -221,10 +221,10 @@ function RotationTool() {
                 label="Matrix"
                 value={input}
                 onChange={setInput}
-                rows={6}
+                rows={7}
             />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="mx-rotation-fields grid gap-3">
                 <SelectField
                     label="Direction"
                     value={direction}
@@ -319,7 +319,7 @@ function PrefixMatrixTool() {
                 rows={6}
             />
 
-            <div className="grid grid-cols-4 gap-3">
+            <div className="mx-four-fields grid gap-3">
                 <NumberField label="r1" value={r1} onChange={setR1} min={0} />
                 <NumberField label="c1" value={c1} onChange={setC1} min={0} />
                 <NumberField label="r2" value={r2} onChange={setR2} min={0} />
@@ -383,7 +383,7 @@ function MatrixMultiplicationTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid lg:grid-cols-2 gap-4">
+            <div className="mx-dual-inputs grid gap-4">
                 <TextArea label="Matrix A" value={a} onChange={setA} rows={6} />
                 <TextArea label="Matrix B" value={b} onChange={setB} rows={6} />
             </div>
@@ -442,7 +442,7 @@ function MatrixExponentiationTool() {
                 label="Square matrix"
                 value={input}
                 onChange={setInput}
-                rows={5}
+                rows={7}
             />
 
             <CheckField
@@ -454,7 +454,7 @@ function MatrixExponentiationTool() {
             <div
                 className={
                     useMod
-                        ? "grid grid-cols-1 sm:grid-cols-2 gap-3"
+                        ? "mx-two-fields grid gap-3"
                         : "grid grid-cols-1 gap-3"
                 }
             >
@@ -516,7 +516,7 @@ function FloodFillTool() {
                 rows={6}
             />
 
-            <div className="grid grid-cols-3 gap-3 items-end">
+            <div className="mx-three-fields grid gap-3 items-end">
                 <NumberField
                     label="Start row"
                     value={sr}
@@ -586,7 +586,7 @@ function GridBFSTool() {
         <div className="space-y-4">
             <TextArea label="Grid" value={input} onChange={setInput} rows={6} />
 
-            <div className="grid grid-cols-3 gap-3 items-end">
+            <div className="mx-three-fields grid gap-3 items-end">
                 <NumberField
                     label="Start row"
                     value={sr}
@@ -656,7 +656,7 @@ function GridDFSTool() {
         <div className="space-y-4">
             <TextArea label="Grid" value={input} onChange={setInput} rows={6} />
 
-            <div className="grid grid-cols-3 gap-3 items-end">
+            <div className="mx-three-fields grid gap-3 items-end">
                 <NumberField
                     label="Start row"
                     value={sr}
@@ -724,7 +724,7 @@ function SpiralTraversalTool() {
                 label="Matrix"
                 value={input}
                 onChange={setInput}
-                rows={6}
+                rows={9}
             />
 
             {error ? (
@@ -749,51 +749,11 @@ function SpiralTraversalTool() {
 
 const TOOLS = [
     {
-        id: "mx-rotation",
-        label: "Rotation",
-        icon: FaSyncAlt,
-        hint: "Rotate a matrix 90° clockwise or counter-clockwise",
-        Component: RotationTool,
-    },
-
-    {
-        id: "mx-transpose",
-        label: "Transpose",
-        icon: FaExchangeAlt,
-        hint: "Flip a matrix across its main diagonal",
-        Component: TransposeTool,
-    },
-
-    {
         id: "mx-prefix",
         label: "Prefix Matrix",
         icon: FaTable,
         hint: "2D prefix sums with rectangle range queries",
         Component: PrefixMatrixTool,
-    },
-
-    {
-        id: "mx-multiply",
-        label: "Matrix Multiplication",
-        icon: FaTimes,
-        hint: "Multiply two matrices, with optional modulus",
-        Component: MatrixMultiplicationTool,
-    },
-
-    {
-        id: "mx-exponentiation",
-        label: "Matrix Exponentiation",
-        icon: FaSuperscript,
-        hint: "Fast matrix power via repeated squaring",
-        Component: MatrixExponentiationTool,
-    },
-
-    {
-        id: "mx-flood-fill",
-        label: "Flood Fill",
-        icon: FaFillDrip,
-        hint: "4-directional flood fill from a start cell",
-        Component: FloodFillTool,
     },
 
     {
@@ -810,6 +770,46 @@ const TOOLS = [
         icon: FaSitemap,
         hint: "Depth-first visit order from a start cell",
         Component: GridDFSTool,
+    },
+
+    {
+        id: "mx-flood-fill",
+        label: "Flood Fill",
+        icon: FaFillDrip,
+        hint: "4-directional flood fill from a start cell",
+        Component: FloodFillTool,
+    },
+
+    {
+        id: "mx-exponentiation",
+        label: "Matrix Exponentiation",
+        icon: FaSuperscript,
+        hint: "Fast matrix power via repeated squaring",
+        Component: MatrixExponentiationTool,
+    },
+
+    {
+        id: "mx-rotation",
+        label: "Rotation",
+        icon: FaSyncAlt,
+        hint: "Rotate a matrix 90° clockwise or counter-clockwise",
+        Component: RotationTool,
+    },
+
+    {
+        id: "mx-multiply",
+        label: "Matrix Multiplication",
+        icon: FaTimes,
+        hint: "Multiply two matrices, with optional modulus",
+        Component: MatrixMultiplicationTool,
+    },
+
+    {
+        id: "mx-transpose",
+        label: "Transpose",
+        icon: FaExchangeAlt,
+        hint: "Flip a matrix across its main diagonal",
+        Component: TransposeTool,
     },
 
     {
@@ -891,6 +891,7 @@ function ToolCard({ id, icon: Icon, label, hint, children }) {
 function MatrixContent() {
     return (
         <div
+            className="mx-content"
             style={{
                 "--sec-accent": ACCENT,
                 "--sec-accent-soft": `${ACCENT}80`,
@@ -899,9 +900,16 @@ function MatrixContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="cf-tool-grid">
-                {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
+            <div className="cf-tool-grid mx-tool-grid">
+                {TOOLS.map(({ id, label, icon, hint, Component }, index) => (
+                    <div
+                        key={id}
+                        className={
+                            index === TOOLS.length - 1
+                                ? "mx-tool-last cf-tool-keep-half"
+                                : ""
+                        }
+                    >
                         <ToolCard id={id} icon={icon} label={label} hint={hint}>
                             <Component />
                         </ToolCard>

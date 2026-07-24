@@ -77,7 +77,7 @@ function Navbar({ theme, toggleTheme, collapsed, onToggleCollapse }) {
                         borderColor: "var(--line)",
                         color: "var(--muted)",
                         backgroundColor: "var(--bg)",
-                        left: "52px",
+                        left: "60px",
                         top: "18px",
                     }}
                 >

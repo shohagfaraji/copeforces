@@ -25,30 +25,15 @@ function SplitLayout({ left, right }) {
     const previousUserSelectRef = useRef("");
     const previousCursorRef = useRef("");
 
-    // Drives desktop-split vs. mobile-sheet presentation. Read once on
-    // mount (matchMedia, not window.innerWidth, so it's correct before
-    // the first paint) and kept live via a listener.
     const [isDesktop, setIsDesktop] = useState(
         () =>
             typeof window !== "undefined" &&
             window.matchMedia(DESKTOP_QUERY).matches,
     );
-    // Mobile/tablet: the drawing board isn't a side pane, it's a
-    // full-screen sheet opened on demand. It must never be moved with a
-    // CSS transform while open: Excalidraw measures its canvas position
-    // once on mount/resize and caches it for converting touch points to
-    // canvas coordinates. A translateY slide-in changes the element's
-    // on-screen position *after* that measurement, so every touch then
-    // lands offset by roughly the slide distance — which is exactly the
-    // "drawing appears higher up" bug. Hiding it with `display: none`
-    // until opened (no transform) avoids that entirely.
     const [mobileBoardOpen, setMobileBoardOpen] = useState(false);
 
     const openMobileBoard = () => {
         setMobileBoardOpen(true);
-        // Excalidraw already mounted while hidden (display: none gives it
-        // a 0×0 box), so once it becomes visible we nudge it to
-        // re-measure by firing the resize event it listens for.
         requestAnimationFrame(() => {
             window.dispatchEvent(new Event("resize"));
         });
@@ -227,18 +212,14 @@ function SplitLayout({ left, right }) {
         };
     }, [isDesktop, rightDisplayWidth]);
 
-    const leftDisplayWidth = isDesktop
-        ? 100 - Math.min(rightDisplayWidth, DEFAULT_RIGHT_WIDTH)
-        : 100;
+    const leftDisplayWidth = !isDesktop
+        ? "100%"
+        : isCollapsed
+          ? `calc(100% - ${COLLAPSED_HANDLE_WIDTH_REM}rem)`
+          : `${100 - Math.min(rightDisplayWidth, DEFAULT_RIGHT_WIDTH)}%`;
     const handleLeft = isDesktop ? 100 - rightDisplayWidth : 100;
     const paneTransition = "none";
 
-    // `left` and `right` are each mounted exactly once below, no matter
-    // the breakpoint. Rendering them a second time for a "mobile copy"
-    // would duplicate every section's id in the DOM (breaking
-    // getElementById-based scroll tracking) and mount a second
-    // Excalidraw instance, so the desktop/mobile difference here is
-    // purely CSS on shared wrappers, never a second copy of the content.
     return (
         <div
             ref={containerRef}
@@ -247,7 +228,7 @@ function SplitLayout({ left, right }) {
             <div
                 className="h-full min-w-0"
                 style={{
-                    width: `${leftDisplayWidth}%`,
+                    width: leftDisplayWidth,
                     position: isDesktop ? "absolute" : undefined,
                     inset: isDesktop ? "0 auto 0 0" : undefined,
                     transition: isDesktop ? paneTransition : undefined,
@@ -278,7 +259,7 @@ function SplitLayout({ left, right }) {
                 >
                     {isCollapsed ? (
                         <span
-                            className="text-[12px] font-bold uppercase tracking-[0.16em] [writing-mode:vertical-rl] rotate-180 whitespace-nowrap"
+                            className="text-sm font-bold uppercase tracking-[0.16em] [writing-mode:vertical-rl] rotate-180 whitespace-nowrap"
                             style={{ color: "var(--accent-violet)" }}
                         >
                             Drawing board

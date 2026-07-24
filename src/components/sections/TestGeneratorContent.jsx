@@ -47,7 +47,7 @@ function CopyButton({ value }) {
 
             setTimeout(() => setCopied(false), 1200);
         } catch {
-            /* clipboard unavailable */
+            return;
         }
     }
 
@@ -219,7 +219,7 @@ function RandomIntArrayTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="gen-int-fields grid gap-3">
                 <NumberField
                     label="Length"
                     value={length}
@@ -266,7 +266,7 @@ function RandomStringTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="gen-two-fields grid gap-3">
                 <NumberField
                     label="Length"
                     value={length}
@@ -322,7 +322,7 @@ function RandomTreeTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="gen-three-fields grid gap-3">
                 <NumberField
                     label="Nodes (n)"
                     value={n}
@@ -396,7 +396,7 @@ function RandomGraphTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="gen-two-fields grid gap-3">
                 <NumberField
                     label="Nodes (n)"
                     value={n}
@@ -483,7 +483,7 @@ function RandomMatrixTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-3">
+            <div className="gen-four-fields grid gap-3">
                 <NumberField
                     label="Rows"
                     value={rows}
@@ -568,7 +568,7 @@ function RandomQueriesTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="gen-two-fields grid gap-3">
                 <NumberField
                     label="Query count"
                     value={count}
@@ -583,7 +583,7 @@ function RandomQueriesTool() {
                 />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="gen-three-fields grid gap-3">
                 <SelectField
                     label="Query type"
                     value={type}
@@ -675,19 +675,19 @@ function CustomConstraintsTool() {
 
 const TOOLS = [
     {
-        id: "gen-int-array",
-        label: "Random Integer Arrays",
-        icon: FaHashtag,
-        hint: "Generate arrays with length/range/uniqueness options",
-        Component: RandomIntArrayTool,
+        id: "gen-graph",
+        label: "Random Graphs",
+        icon: FaProjectDiagram,
+        hint: "Generate directed/undirected graphs with constraints",
+        Component: RandomGraphTool,
     },
 
     {
-        id: "gen-string",
-        label: "Random Strings",
-        icon: FaFont,
-        hint: "Generate strings from a chosen alphabet",
-        Component: RandomStringTool,
+        id: "gen-constraints",
+        label: "Custom Constraints",
+        icon: FaSlidersH,
+        hint: "Define named variables with min/max to generate together",
+        Component: CustomConstraintsTool,
     },
 
     {
@@ -699,11 +699,12 @@ const TOOLS = [
     },
 
     {
-        id: "gen-graph",
-        label: "Random Graphs",
-        icon: FaProjectDiagram,
-        hint: "Generate directed/undirected graphs with constraints",
-        Component: RandomGraphTool,
+        id: "gen-queries",
+        label: "Random Queries",
+        icon: FaListUl,
+        hint: "Generate range, point, or update queries",
+        layout: "query",
+        Component: RandomQueriesTool,
     },
 
     {
@@ -715,27 +716,30 @@ const TOOLS = [
     },
 
     {
+        id: "gen-int-array",
+        label: "Random Integer Arrays",
+        icon: FaHashtag,
+        hint: "Generate arrays with length/range/uniqueness options",
+        layout: "int",
+        Component: RandomIntArrayTool,
+    },
+
+    {
+        id: "gen-string",
+        label: "Random Strings",
+        icon: FaFont,
+        hint: "Generate strings from a chosen alphabet",
+        layout: "half",
+        Component: RandomStringTool,
+    },
+
+    {
         id: "gen-permutation",
         label: "Random Permutations",
         icon: FaRandom,
         hint: "Generate a random permutation of 1..n",
+        layout: "half",
         Component: RandomPermutationTool,
-    },
-
-    {
-        id: "gen-queries",
-        label: "Random Queries",
-        icon: FaListUl,
-        hint: "Generate range, point, or update queries",
-        Component: RandomQueriesTool,
-    },
-
-    {
-        id: "gen-constraints",
-        label: "Custom Constraints",
-        icon: FaSlidersH,
-        hint: "Define named variables with min/max to generate together",
-        Component: CustomConstraintsTool,
     },
 ];
 
@@ -809,6 +813,7 @@ function ToolCard({ id, icon: Icon, label, hint, children }) {
 function TestGeneratorContent() {
     return (
         <div
+            className="gen-content"
             style={{
                 "--sec-accent": ACCENT,
                 "--sec-accent-soft": `${ACCENT}80`,
@@ -817,9 +822,12 @@ function TestGeneratorContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="cf-tool-grid">
-                {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
+            <div className="cf-tool-grid gen-tool-grid">
+                {TOOLS.map(({ id, label, icon, hint, layout, Component }) => (
+                    <div
+                        key={id}
+                        className={layout ? `gen-tool-${layout}` : ""}
+                    >
                         <ToolCard id={id} icon={icon} label={label} hint={hint}>
                             <Component />
                         </ToolCard>

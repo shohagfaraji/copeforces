@@ -2,7 +2,7 @@ function Section({ id, title, tag, color, children }) {
     return (
         <section
             id={id}
-            className="px-3 py-4 sm:px-5 sm:py-5 lg:px-8 lg:py-6 scroll-mt-4"
+            className="cf-section-shell px-3 py-5 sm:px-5 sm:py-6 lg:px-3 lg:py-7 scroll-mt-4"
             style={{
                 "--sec-accent": color,
                 "--sec-accent-soft": `${color}66`,

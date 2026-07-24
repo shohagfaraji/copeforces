@@ -20,13 +20,22 @@ const rawSections = [
     { id: "matrix", title: "Matrix", tag: "MX" },
     { id: "search", title: "Search", tag: "SR" },
     { id: "trees", title: "Trees", tag: "TR" },
+    {
+        id: "segment-tree",
+        title: "Segment Tree",
+        tag: "SG",
+        status: "New",
+    },
     { id: "graphs", title: "Graphs", tag: "GR", status: "Updated" },
     { id: "dynamic-programming", title: "Dynamic Programming", tag: "DP" },
     { id: "greedy", title: "Greedy", tag: "GD" },
     { id: "quick-reference", title: "Quick Reference", tag: "REF" },
 ];
 
-export const sections = rawSections.map((section, index) => ({
-    ...section,
-    color: RANK_COLORS[index % RANK_COLORS.length],
-}));
+let rankColorIndex = 0;
+export const sections = rawSections.map((section) => {
+    const color =
+        section.color || RANK_COLORS[rankColorIndex % RANK_COLORS.length];
+    if (!section.color) rankColorIndex += 1;
+    return { ...section, color };
+});

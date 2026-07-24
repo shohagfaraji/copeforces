@@ -9,7 +9,7 @@ import {
 } from "../../utils/greedyTools";
 import { sections } from "../../data/sections";
 
-const ACCENT = sections.find((s) => s.id === "greedy")?.color || "#FF8C00";
+const ACCENT = sections.find((s) => s.id === "greedy")?.color || "#03A89E";
 
 function ToolBlock({ id, label, icon: Icon, children }) {
     return (
@@ -166,8 +166,8 @@ function ActivitySelectionTool() {
                                             left: `${leftPct}%`,
                                             width: `${Math.max(widthPct, 4)}%`,
                                             backgroundColor: isSelected
-                                                ? "#008000"
-                                                : "#c0392b",
+                                                ? "var(--sec-accent)"
+                                                : "color-mix(in srgb, var(--muted) 65%, var(--panel))",
                                             color: "#fff",
                                         }}
                                     >
@@ -183,11 +183,11 @@ function ActivitySelectionTool() {
                     style={{ color: "var(--muted)" }}
                 >
                     selected:{" "}
-                    <strong style={{ color: "#008000" }}>
+                    <strong style={{ color: "var(--sec-accent)" }}>
                         {selected.length}
                     </strong>{" "}
                     · rejected:{" "}
-                    <strong style={{ color: "#c0392b" }}>
+                    <strong style={{ color: "var(--muted)" }}>
                         {rejected.length}
                     </strong>
                 </p>
@@ -295,7 +295,7 @@ function FractionalKnapsackTool() {
                     style={{ color: "var(--muted)" }}
                 >
                     total value:{" "}
-                    <strong style={{ color: "var(--ink)" }}>
+                    <strong style={{ color: "var(--sec-accent)" }}>
                         {totalValue.toFixed(2)}
                     </strong>
                 </p>
@@ -389,7 +389,7 @@ function CoinChangeTool() {
                     {optimalResult && optimalResult.success && (
                         <p>
                             optimal:{" "}
-                            <strong style={{ color: "var(--ink)" }}>
+                            <strong style={{ color: "var(--sec-accent)" }}>
                                 {optimalResult.used.join(" + ")}
                             </strong>{" "}
                             ({optimalResult.used.length} coins)
@@ -448,9 +448,11 @@ function JobSequencingTool() {
                             key={idx}
                             className="w-16 h-16 rounded-md border flex flex-col items-center justify-center text-xs font-mono-cf flex-shrink-0"
                             style={{
-                                borderColor: "var(--line)",
+                                borderColor: job
+                                    ? "var(--sec-accent)"
+                                    : "var(--line)",
                                 backgroundColor: job
-                                    ? "var(--accent-blue)"
+                                    ? "var(--sec-accent)"
                                     : "transparent",
                                 color: job ? "#fff" : "var(--muted)",
                             }}
@@ -467,7 +469,7 @@ function JobSequencingTool() {
                     style={{ color: "var(--muted)" }}
                 >
                     total profit:{" "}
-                    <strong style={{ color: "var(--ink)" }}>
+                    <strong style={{ color: "var(--sec-accent)" }}>
                         {totalProfit}
                     </strong>
                 </p>

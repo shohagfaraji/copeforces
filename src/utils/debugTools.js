@@ -1,4 +1,3 @@
-// Normalize output for comparison
 export function normalizeOutput(
     text,
     {
@@ -24,7 +23,6 @@ export function normalizeOutput(
     return lines;
 }
 
-// Compare two outputs
 export function compareOutputs(expected, actual, options = {}) {
     const left = normalizeOutput(expected, options);
     const right = normalizeOutput(actual, options);
@@ -47,7 +45,6 @@ export function compareOutputs(expected, actual, options = {}) {
     };
 }
 
-// Full line diff
 export function lineDifferences(expected, actual, options = {}) {
     const left = normalizeOutput(expected, options);
     const right = normalizeOutput(actual, options);
@@ -69,7 +66,6 @@ export function lineDifferences(expected, actual, options = {}) {
     return differences;
 }
 
-// Character diff
 export function characterDifference(expected, actual, options = {}) {
     const left = normalizeOutput(expected, options);
     const right = normalizeOutput(actual, options);
@@ -99,7 +95,6 @@ export function characterDifference(expected, actual, options = {}) {
     return null;
 }
 
-// Parse numbers from text
 export function parseNumberArray(text) {
     return text
         .trim()
@@ -109,7 +104,6 @@ export function parseNumberArray(text) {
         .filter(Number.isFinite);
 }
 
-// Fisher–Yates shuffle
 export function shuffleArray(array) {
     const arr = [...array];
 
@@ -122,7 +116,6 @@ export function shuffleArray(array) {
     return arr;
 }
 
-// Random integer
 export function randomInt(min, max) {
     let lo = Math.ceil(Number(min));
     let hi = Math.floor(Number(max));
@@ -133,7 +126,6 @@ export function randomInt(min, max) {
     return Math.floor(Math.random() * (hi - lo + 1)) + lo;
 }
 
-// Random array
 export function generateRandomArray(
     length,
     min,
@@ -184,7 +176,6 @@ export function generateRandomArray(
     return result;
 }
 
-// Sorted check
 export function checkSorted(array, descending = false) {
     if (array.length <= 1) {
         return {
@@ -219,7 +210,6 @@ export function checkSorted(array, descending = false) {
     };
 }
 
-// Duplicate finder
 export function findDuplicates(array) {
     const frequency = new Map();
 
@@ -243,7 +233,6 @@ export function findDuplicates(array) {
     return duplicates;
 }
 
-// Frequency map
 export function frequencyMap(array) {
     const map = new Map();
 
@@ -254,7 +243,6 @@ export function frequencyMap(array) {
     return map;
 }
 
-// Compare frequencies
 export function compareFrequencies(a, b) {
     const left = frequencyMap(a);
     const right = frequencyMap(b);

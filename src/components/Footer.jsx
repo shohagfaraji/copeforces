@@ -47,7 +47,7 @@ function Footer({ theme }) {
                         <span className="font-bold text-base">Copeforces</span>
                     </div>
                     <p
-                        className="text-sm leading-relaxed max-w-md mx-auto sm:mx-0"
+                        className="text-base leading-relaxed max-w-md mx-auto sm:mx-0"
                         style={{ color: "var(--muted)" }}
                     >
                         {message}
@@ -56,7 +56,7 @@ function Footer({ theme }) {
 
                 <div className="w-full sm:w-auto sm:flex-shrink-0 text-center sm:text-left">
                     <h3
-                        className="font-mono-cf text-xs font-bold uppercase tracking-wider mb-3"
+                        className="font-mono-cf text-sm font-bold uppercase tracking-wider mb-3"
                         style={{ color: "var(--muted)" }}
                     >
                         Connect
@@ -69,7 +69,7 @@ function Footer({ theme }) {
                                     href={href}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-sm hover:opacity-70 transition-opacity"
+                                    className="flex items-center gap-2 text-base hover:opacity-70 transition-opacity"
                                     style={{ color }}
                                 >
                                     {Icon ? (
@@ -90,7 +90,7 @@ function Footer({ theme }) {
             </div>
 
             <div
-                className="border-t py-4 text-center text-xs font-mono-cf"
+                className="border-t py-4 text-center text-sm font-mono-cf"
                 style={{ borderColor: "var(--line)", color: "var(--muted)" }}
             >
                 Copyright {new Date().getFullYear()} Copeforces. All rights

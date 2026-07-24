@@ -46,7 +46,7 @@ function CopyButton({ value }) {
 
             setTimeout(() => setCopied(false), 1200);
         } catch {
-            /* clipboard unavailable */
+            return;
         }
     }
 
@@ -181,43 +181,8 @@ const TOOLS = [
         label: "Compare Outputs",
         icon: FaBalanceScale,
         hint: "Compare expected and actual output",
-        wide: true,
+        large: true,
         Component: CompareOutputsTool,
-    },
-
-    {
-        id: "dbg-line-diff",
-        label: "Line Difference",
-        icon: FaStream,
-        hint: "Show differing lines",
-        wide: true,
-        Component: LineDifferenceTool,
-    },
-
-    {
-        id: "dbg-char-diff",
-        label: "Character Difference",
-        icon: FaFont,
-        hint: "Find the first differing character",
-        wide: true,
-        Component: CharacterDifferenceTool,
-    },
-
-    {
-        id: "dbg-random-array",
-        label: "Random Array",
-        icon: FaRandom,
-        hint: "Generate random test arrays",
-        wide: true,
-        Component: RandomArrayGeneratorTool,
-    },
-
-    {
-        id: "dbg-shuffle",
-        label: "Shuffle Array",
-        icon: FaRandom,
-        hint: "Shuffle an existing array",
-        Component: ShuffleArrayTool,
     },
 
     {
@@ -229,6 +194,15 @@ const TOOLS = [
     },
 
     {
+        id: "dbg-line-diff",
+        label: "Line Difference",
+        icon: FaStream,
+        hint: "Show differing lines",
+        large: true,
+        Component: LineDifferenceTool,
+    },
+
+    {
         id: "dbg-find-duplicates",
         label: "Find Duplicates",
         icon: FaClone,
@@ -237,11 +211,37 @@ const TOOLS = [
     },
 
     {
+        id: "dbg-char-diff",
+        label: "Character Difference",
+        icon: FaFont,
+        hint: "Find the first differing character",
+        large: true,
+        Component: CharacterDifferenceTool,
+    },
+
+    {
         id: "dbg-compare-frequencies",
         label: "Compare Frequencies",
         icon: FaEquals,
         hint: "Check if two arrays are the same multiset",
         Component: CompareFrequenciesTool,
+    },
+
+    {
+        id: "dbg-random-array",
+        label: "Random Array",
+        icon: FaRandom,
+        hint: "Generate random test arrays",
+        large: true,
+        Component: RandomArrayGeneratorTool,
+    },
+
+    {
+        id: "dbg-shuffle",
+        label: "Shuffle Array",
+        icon: FaRandom,
+        hint: "Shuffle an existing array",
+        Component: ShuffleArrayTool,
     },
 ];
 
@@ -260,7 +260,7 @@ function CompareOutputsTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid lg:grid-cols-2 gap-4">
+            <div className="dbg-dual-inputs grid gap-4">
                 <TextArea
                     label="Expected Output"
                     value={expected}
@@ -371,7 +371,7 @@ function LineDifferenceTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid lg:grid-cols-2 gap-4">
+            <div className="dbg-dual-inputs grid gap-4">
                 <TextArea
                     label="Expected"
                     value={expected}
@@ -462,7 +462,7 @@ function CharacterDifferenceTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid lg:grid-cols-2 gap-4">
+            <div className="dbg-dual-inputs grid gap-4">
                 <TextArea
                     label="Expected"
                     value={expected}
@@ -565,8 +565,6 @@ function RandomArrayGeneratorTool() {
     const [reverse, setReverse] = useState(false);
     const [permutation, setPermutation] = useState(false);
 
-    // Bumping this is the "regenerate" trigger — it's the only thing that
-    // forces a fresh array when none of the actual parameters changed.
     const [seed, setSeed] = useState(0);
 
     const result = useMemo(() => {
@@ -583,7 +581,7 @@ function RandomArrayGeneratorTool() {
 
     return (
         <div className="space-y-5">
-            <div className="grid sm:grid-cols-3 gap-3">
+            <div className="dbg-random-fields grid gap-3">
                 <label className="text-xs font-mono-cf">
                     Length
                     <input
@@ -616,7 +614,7 @@ function RandomArrayGeneratorTool() {
                 </label>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-2 text-xs">
+            <div className="dbg-random-options grid gap-2 text-xs">
                 <label>
                     <input
                         type="checkbox"
@@ -677,8 +675,6 @@ function RandomArrayGeneratorTool() {
 function ShuffleArrayTool() {
     const [input, setInput] = useState("1 2 3 4 5");
 
-    // Same idea as the random array tool: bump `seed` to force a reshuffle
-    // even when the input text hasn't changed.
     const [seed, setSeed] = useState(0);
     const shuffled = useMemo(() => {
         void seed;
@@ -689,7 +685,7 @@ function ShuffleArrayTool() {
         <div className="space-y-4">
             <TextArea
                 label="Array"
-                rows={5}
+                rows={3}
                 value={input}
                 onChange={setInput}
             />
@@ -838,9 +834,9 @@ function CompareFrequenciesTool() {
 
     return (
         <div className="space-y-4">
-            <div className="grid lg:grid-cols-2 gap-4">
-                <TextArea label="Array A" rows={5} value={a} onChange={setA} />
-                <TextArea label="Array B" rows={5} value={b} onChange={setB} />
+            <div className="dbg-dual-inputs grid gap-4">
+                <TextArea label="Array A" rows={1} value={a} onChange={setA} />
+                <TextArea label="Array B" rows={1} value={b} onChange={setB} />
             </div>
 
             {result.identical ? (
@@ -882,6 +878,7 @@ function CompareFrequenciesTool() {
 function DebugToolsContent() {
     return (
         <div
+            className="dbg-content"
             style={{
                 "--sec-accent": ACCENT,
                 "--sec-accent-soft": `${ACCENT}80`,
@@ -890,9 +887,9 @@ function DebugToolsContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="cf-tool-grid">
-                {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
+            <div className="cf-tool-grid dbg-tool-grid">
+                {TOOLS.map(({ id, label, icon, hint, large, Component }) => (
+                    <div key={id} className={large ? "dbg-tool-large" : ""}>
                         <ToolCard id={id} icon={icon} label={label} hint={hint}>
                             <Component />
                         </ToolCard>

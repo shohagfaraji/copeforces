@@ -1,12 +1,7 @@
-// Hierarchical top-down layout: BFS from the first node assigns each
-// node a depth (row). Nodes within a row are spread evenly across
-// the width. Disconnected nodes get appended as extra rows at the bottom.
 export function computeLayout(nodes, edges, width, height) {
     const positions = {};
     if (nodes.length === 0) return positions;
 
-    // Build undirected adjacency for layout purposes only (layout should
-    // group connected nodes regardless of edge direction).
     const adjList = {};
     nodes.forEach((n) => (adjList[n] = []));
     for (const { u, v } of edges) {
@@ -18,8 +13,6 @@ export function computeLayout(nodes, edges, width, height) {
     const visited = new Set();
     let nextRow = 0;
 
-    // BFS layering, starting a new BFS for each disconnected component,
-    // in the order nodes first appeared in the input.
     for (const start of nodes) {
         if (visited.has(start)) continue;
         visited.add(start);
@@ -41,10 +34,9 @@ export function computeLayout(nodes, edges, width, height) {
             queue = nextQueue;
             currentDepth++;
         }
-        nextRow = currentDepth + 1; // leave a gap before the next disconnected component
+        nextRow = currentDepth + 1;
     }
 
-    // Group nodes by row, preserving input order within each row
     const rows = {};
     for (const node of nodes) {
         const d = depth[node];
