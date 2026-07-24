@@ -165,8 +165,6 @@ export function modPow(base, exponent, mod) {
 
 // --- C++ overflow awareness ---
 
-// Returns "int", "long long", or "overflow" describing the smallest
-// C++ integer type that can hold this value (assuming signed types).
 export function cppTypeFor(value) {
     const exact = toExactBigInt(value);
     if (exact !== null) {
@@ -184,8 +182,6 @@ export function cppTypeFor(value) {
     return "overflow";
 }
 
-// Checks whether a*b would exceed the given C++ type's max, without
-// actually computing the (potentially huge/imprecise) product first.
 export function multiplicationExceeds(a, b, limit) {
     const exactA = toExactBigInt(a);
     const exactB = toExactBigInt(b);

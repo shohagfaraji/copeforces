@@ -223,8 +223,6 @@ function SortedArrayInput({
     function handleChange(e) {
         const raw = e.target.value;
 
-        // Once a value is "finished" (a space or newline was just typed),
-        // re-sort immediately so the box always reflects sorted order.
         if (raw.endsWith(" ") || raw.endsWith("\n")) {
             const nums = parseSortedArray(raw).sort((a, b) => a - b);
             onChange(nums.length > 0 ? `${nums.join(" ")} ` : "");
@@ -914,48 +912,19 @@ function TernarySearchTool() {
 
 const TOOLS = [
     {
-        id: "sr-binary-search",
-        label: "Binary Search",
-        icon: FaSearch,
-        hint: "Full lo/hi/mid trace table for a target",
-        wide: true,
-        Component: BinarySearchTraceTool,
-    },
-
-    {
-        id: "sr-visualizer",
-        label: "Search Visualizer",
-        icon: FaEye,
-        hint: "Step through binary search on a number line",
-        wide: true,
-        Component: SearchVisualizerTool,
-    },
-
-    {
-        id: "sr-bounds",
-        label: "Lower & Upper Bound",
-        icon: FaArrowsAltV,
-        hint: "Both boundary indices for a target, side by side",
-        wide: true,
-        Component: BoundsTool,
-    },
-
-    {
-        id: "sr-occurrences",
-        label: "Occurrences",
-        icon: FaListOl,
-        hint: "First, last, and all occurrences — O(n) scan, any order",
-        wide: true,
-        Component: OccurrencesTool,
-    },
-
-    {
         id: "sr-binary-search-answer",
         label: "Binary Search on Answer",
         icon: FaCrosshairs,
         hint: "Find the boundary of a monotonic predicate",
-        wide: true,
         Component: BinarySearchOnAnswerTool,
+    },
+
+    {
+        id: "sr-binary-search",
+        label: "Binary Search",
+        icon: FaSearch,
+        hint: "Full lo/hi/mid trace table for a target",
+        Component: BinarySearchTraceTool,
     },
 
     {
@@ -963,8 +932,31 @@ const TOOLS = [
         label: "Ternary Search",
         icon: FaChartLine,
         hint: "Find the min/max of a unimodal function",
-        wide: true,
         Component: TernarySearchTool,
+    },
+
+    {
+        id: "sr-visualizer",
+        label: "Search Visualizer",
+        icon: FaEye,
+        hint: "Step through binary search on a number line",
+        Component: SearchVisualizerTool,
+    },
+
+    {
+        id: "sr-occurrences",
+        label: "Occurrences",
+        icon: FaListOl,
+        hint: "First, last, and all occurrences — O(n) scan, any order",
+        Component: OccurrencesTool,
+    },
+
+    {
+        id: "sr-bounds",
+        label: "Lower & Upper Bound",
+        icon: FaArrowsAltV,
+        hint: "Both boundary indices for a target, side by side",
+        Component: BoundsTool,
     },
 ];
 
@@ -1038,6 +1030,7 @@ function ToolCard({ id, icon: Icon, label, hint, children }) {
 function SearchContent() {
     return (
         <div
+            className="sr-content"
             style={{
                 "--sec-accent": ACCENT,
                 "--sec-accent-soft": `${ACCENT}80`,
@@ -1046,9 +1039,9 @@ function SearchContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="cf-tool-grid">
-                {TOOLS.map(({ id, label, icon, hint, wide, Component }) => (
-                    <div key={id} className={wide ? "cf-tool-wide" : ""}>
+            <div className="cf-tool-grid sr-tool-grid">
+                {TOOLS.map(({ id, label, icon, hint, Component }) => (
+                    <div key={id}>
                         <ToolCard id={id} icon={icon} label={label} hint={hint}>
                             <Component />
                         </ToolCard>

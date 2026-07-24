@@ -18,6 +18,8 @@ function GraphCanvas({
     edges,
     directed,
     nodeStates = {},
+    stateColors = {},
+    edgeColor = "var(--muted)",
     width = 600,
     height = 360,
 }) {
@@ -64,7 +66,7 @@ function GraphCanvas({
                     <path
                         d="M2 1L8 5L2 9"
                         fill="none"
-                        stroke="var(--muted)"
+                        stroke={edgeColor}
                         strokeWidth="1.5"
                     />
                 </marker>
@@ -75,9 +77,6 @@ function GraphCanvas({
                 const to = positions[edge.v];
                 if (!from || !to) return null;
 
-                // Curve every edge slightly, alternating bend direction by index,
-                // so an edge can never lie exactly on top of / pass flush through
-                // a node it doesn't connect to.
                 const mx = (from.x + to.x) / 2;
                 const my = (from.y + to.y) / 2;
                 const dx = to.x - from.x;
@@ -93,7 +92,7 @@ function GraphCanvas({
                         <path
                             d={`M ${from.x} ${from.y} Q ${ctrlX} ${ctrlY} ${to.x} ${to.y}`}
                             fill="none"
-                            stroke="var(--muted)"
+                            stroke={edgeColor}
                             strokeWidth="1.2"
                             opacity="0.55"
                             markerEnd={
@@ -120,7 +119,10 @@ function GraphCanvas({
                 const pos = positions[node];
                 if (!pos) return null;
                 const state = nodeStates[node] || "unvisited";
-                const colors = STATE_COLORS[state];
+                const colors =
+                    stateColors[state] ||
+                    STATE_COLORS[state] ||
+                    STATE_COLORS.unvisited;
                 return (
                     <g key={node}>
                         <circle
@@ -129,7 +131,7 @@ function GraphCanvas({
                             r="18"
                             fill={colors.fill}
                             stroke={colors.stroke}
-                            strokeWidth="1.5"
+                            strokeWidth={colors.strokeWidth || 1.5}
                         />
                         <text
                             x={pos.x}

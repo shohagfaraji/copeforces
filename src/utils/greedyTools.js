@@ -1,5 +1,3 @@
-// Activity selection: given [{start, end}], returns the selected
-// (non-overlapping) activities and the rejected ones, sorted by end time.
 export function activitySelection(activities) {
     const sorted = activities
         .filter(
@@ -25,8 +23,6 @@ export function activitySelection(activities) {
     return { selected, rejected };
 }
 
-// Fractional knapsack: items = [{name, value, weight}], capacity = number.
-// Returns chosen items with the fraction taken of each, sorted by value/weight ratio.
 export function fractionalKnapsack(items, capacity) {
     const cap = Number(capacity);
     if (!Number.isFinite(cap) || cap <= 0) {
@@ -60,8 +56,6 @@ export function fractionalKnapsack(items, capacity) {
     return { taken, totalValue };
 }
 
-// Greedy coin change: repeatedly takes the largest coin <= remaining amount.
-// Returns the coins used and whether it actually reached the target exactly.
 export function greedyCoinChange(denominations, target) {
     const amountTarget = Math.trunc(Number(target));
     if (!Number.isInteger(amountTarget) || amountTarget < 0) {
@@ -85,8 +79,6 @@ export function greedyCoinChange(denominations, target) {
     return { used, remaining, success: remaining === 0 };
 }
 
-// Optimal coin change via DP — used only as a comparison baseline to
-// show when greedy fails to find the minimum number of coins.
 export function optimalCoinChange(denominations, target) {
     const amountTarget = Math.trunc(Number(target));
     if (!Number.isInteger(amountTarget) || amountTarget < 0) {
@@ -123,9 +115,6 @@ export function optimalCoinChange(denominations, target) {
     return { used, success: true };
 }
 
-// Job sequencing with deadlines: jobs = [{name, deadline, profit}].
-// Greedily schedules highest-profit jobs as late as possible before
-// their deadline. Returns the schedule slot-by-slot and total profit.
 export function jobSequencing(jobs) {
     const validJobs = jobs.filter(
         (job) =>

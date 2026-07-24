@@ -71,7 +71,7 @@ function CopyButton({ value, small = false }) {
             setCopied(true);
             window.setTimeout(() => setCopied(false), 1200);
         } catch {
-            /* clipboard unavailable — fail silently */
+            return;
         }
     };
 
@@ -154,9 +154,6 @@ function Select({ label, value, onChange, options, width = "w-24" }) {
     );
 }
 
-/** A single computed-result readout with an optional copy action and an
- *  explicit error state, used in place of ad-hoc paragraphs so every tool's
- *  output reads the same way. */
 function OutputPanel({ label = "Result", value, error, hint, copyValue }) {
     const showCopy = !error && copyValue !== undefined && copyValue !== null;
     return (
@@ -200,7 +197,11 @@ function OutputPanel({ label = "Result", value, error, hint, copyValue }) {
 
 function ToolCard({ id, icon: Icon, label, hint, badge = "", children }) {
     return (
-        <div id={id} className="h-full scroll-mt-20">
+        <article
+            id={id}
+            className="cf-tool-card rounded-xl border p-4 h-full"
+            style={{ borderColor: "var(--line)" }}
+        >
             <div
                 className="flex items-center gap-2.5 mb-4 pb-3 border-b"
                 style={{ borderColor: "var(--line)" }}
@@ -246,7 +247,7 @@ function ToolCard({ id, icon: Icon, label, hint, badge = "", children }) {
                 </div>
             </div>
             {children}
-        </div>
+        </article>
     );
 }
 
@@ -291,110 +292,83 @@ function FastCalculatorTool() {
             setCopiedKey(label);
             window.setTimeout(() => setCopiedKey(null), 1000);
         } catch {
-            /* clipboard unavailable — fail silently */
+            return;
         }
     };
 
     return (
-        <div className="space-y-5">
-            <div className="grid md:grid-cols-2 gap-5">
-                <div
-                    className="rounded-lg border p-4"
-                    style={{ borderColor: "var(--line)" }}
-                >
-                    <h4
-                        className="text-xs font-bold uppercase mb-3"
-                        style={{ color: "var(--muted)" }}
-                    >
-                        Input
-                    </h4>
-
-                    <div className="flex gap-4">
-                        <Field
-                            label="a"
-                            value={a}
-                            onChange={setA}
-                            width="w-full"
-                        />
-                        <Field
-                            label="b"
-                            value={b}
-                            onChange={setB}
-                            width="w-full"
-                        />
-                    </div>
-                </div>
-
-                <div
-                    className="rounded-lg border p-4"
-                    style={{ borderColor: "var(--line)" }}
-                >
-                    <h4
-                        className="text-xs font-bold uppercase mb-3 flex items-center justify-between"
-                        style={{ color: "var(--muted)" }}
-                    >
-                        Output
-                        {valid && (
-                            <span className="normal-case font-normal text-[10px]">
-                                click a result to copy
-                            </span>
-                        )}
-                    </h4>
-
-                    {!valid ? (
-                        <p
-                            className="text-sm"
-                            style={{ color: "var(--muted)" }}
-                        >
-                            Enter valid numbers.
-                        </p>
-                    ) : (
-                        <>
-                            <div className="grid grid-cols-2 gap-2">
-                                {ops.map(({ label, value }) => (
-                                    <button
-                                        type="button"
-                                        key={label}
-                                        onClick={() => copyOp(label, value)}
-                                        className="cf-pill text-left rounded-md border p-2"
-                                        style={{ borderColor: "var(--line)" }}
-                                        title="Copy value"
-                                    >
-                                        <div
-                                            className="text-[11px] flex items-center justify-between gap-1"
-                                            style={{ color: "var(--muted)" }}
-                                        >
-                                            {label}
-                                            {copiedKey === label ? (
-                                                <FaCheck
-                                                    size={9}
-                                                    style={{ color: OK_COLOR }}
-                                                />
-                                            ) : (
-                                                <FaCopy
-                                                    size={9}
-                                                    className="opacity-0 cf-copy-hint"
-                                                />
-                                            )}
-                                        </div>
-                                        <div className="font-mono-cf font-bold text-base break-all">
-                                            {value}
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                            <p
-                                className="text-[11px] mt-3"
-                                style={{ color: "var(--muted)" }}
-                            >
-                                {calculation.exact
-                                    ? "Using exact decimal arithmetic with full-digit output."
-                                    : "Enter valid finite decimal numbers."}
-                            </p>
-                        </>
-                    )}
-                </div>
+        <div className="space-y-4">
+            <div className="cu-fast-inputs grid gap-4">
+                <Field label="a" value={a} onChange={setA} width="w-full" />
+                <Field label="b" value={b} onChange={setB} width="w-full" />
             </div>
+
+            <div
+                className="flex flex-wrap items-center justify-between gap-2 border-t pt-3"
+                style={{ borderColor: "var(--line)" }}
+            >
+                <h4
+                    className="text-xs font-bold uppercase"
+                    style={{ color: "var(--muted)" }}
+                >
+                    Results
+                </h4>
+                {valid && (
+                    <span
+                        className="text-[10px]"
+                        style={{ color: "var(--muted)" }}
+                    >
+                        Click any result to copy
+                    </span>
+                )}
+            </div>
+
+            {!valid ? (
+                <p className="text-sm" style={{ color: "var(--muted)" }}>
+                    Enter valid numbers.
+                </p>
+            ) : (
+                <>
+                    <div className="cu-fast-results grid grid-cols-2 gap-2">
+                        {ops.map(({ label, value }) => (
+                            <button
+                                type="button"
+                                key={label}
+                                onClick={() => copyOp(label, value)}
+                                className="cf-pill text-left rounded-md border p-2"
+                                style={{ borderColor: "var(--line)" }}
+                                title="Copy value"
+                            >
+                                <div
+                                    className="text-[11px] flex items-center justify-between gap-1"
+                                    style={{ color: "var(--muted)" }}
+                                >
+                                    {label}
+                                    {copiedKey === label ? (
+                                        <FaCheck
+                                            size={9}
+                                            style={{ color: OK_COLOR }}
+                                        />
+                                    ) : (
+                                        <FaCopy
+                                            size={9}
+                                            className="opacity-0 cf-copy-hint"
+                                        />
+                                    )}
+                                </div>
+                                <div className="font-mono-cf font-bold text-base break-all">
+                                    {value}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                    <p className="text-[11px]" style={{ color: "var(--muted)" }}>
+                        {calculation.exact
+                            ? "Using exact decimal arithmetic with full-digit output."
+                            : "Enter valid finite decimal numbers."}
+                    </p>
+                </>
+            )}
         </div>
     );
 }
@@ -1068,23 +1042,14 @@ function FloatPrecisionTool() {
     );
 }
 
-//  Section assembly
-
 const TOOLS = [
     {
         id: "cu-fast-calculator",
         label: "Fast calculator",
         icon: FaCalculator,
         hint: "Quick arithmetic on two numbers",
-        wide: true,
+        large: true,
         Component: FastCalculatorTool,
-    },
-    {
-        id: "cu-base-converter",
-        label: "Base converter",
-        icon: FaExchangeAlt,
-        hint: "Convert integers between bases 2–36",
-        Component: BaseConverterTool,
     },
     {
         id: "cu-binary-calculator",
@@ -1094,11 +1059,18 @@ const TOOLS = [
         Component: BinaryCalculatorTool,
     },
     {
+        id: "cu-base-converter",
+        label: "Base converter",
+        icon: FaExchangeAlt,
+        hint: "Convert integers between bases 2–36",
+        Component: BaseConverterTool,
+    },
+    {
         id: "cu-ascii-table",
         label: "ASCII table",
         icon: FaTable,
         hint: "Look up character codes 0–255",
-        wide: true,
+        large: true,
         Component: AsciiTableTool,
     },
     {
@@ -1106,7 +1078,7 @@ const TOOLS = [
         label: "Character table",
         icon: FaFont,
         hint: "Per-character codes for a string",
-        wide: true,
+        large: true,
         Component: CharacterTableTool,
     },
     {
@@ -1129,7 +1101,7 @@ const TOOLS = [
         icon: FaSquareRootAlt,
         badge: "New",
         hint: "Variables, huge integers, optional modulo",
-        wide: true,
+        large: true,
         Component: FormulaSolverTool,
     },
     {
@@ -1137,7 +1109,6 @@ const TOOLS = [
         label: "Big integer calculator",
         icon: FaInfinity,
         hint: "Arbitrary-precision arithmetic",
-        wide: true,
         Component: BigIntCalculatorTool,
     },
     {
@@ -1159,6 +1130,7 @@ const TOOLS = [
 function ContestUtilitiesContent() {
     return (
         <div
+            className="cu-content"
             style={{
                 "--sec-accent": ACCENT,
                 "--sec-accent-soft": `${ACCENT}80`,
@@ -1167,10 +1139,23 @@ function ContestUtilitiesContent() {
         >
             <QuickNav tools={TOOLS} />
 
-            <div className="cf-tool-grid">
+            <div className="cf-tool-grid cu-tool-grid">
                 {TOOLS.map(
-                    ({ id, label, icon, hint, badge, wide, Component }) => (
-                        <div key={id} className={wide ? "cf-tool-wide" : ""}>
+                    (
+                        { id, label, icon, hint, badge, large, Component },
+                        index,
+                    ) => (
+                        <div
+                            key={id}
+                            className={[
+                                large ? "cu-tool-large" : "",
+                                index === TOOLS.length - 1
+                                    ? "cu-tool-last cf-tool-keep-half"
+                                    : "",
+                            ]
+                                .filter(Boolean)
+                                .join(" ")}
+                        >
                             <ToolCard
                                 id={id}
                                 icon={icon}

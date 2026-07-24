@@ -10,8 +10,6 @@ export function useHomepageTracking() {
         fetch("/.netlify/functions/track-view", {
             method: "POST",
             keepalive: true,
-        }).catch(() => {
-            // Silently ignore — analytics must never affect the user's experience
-        });
+        }).catch(() => undefined);
     }, []);
 }

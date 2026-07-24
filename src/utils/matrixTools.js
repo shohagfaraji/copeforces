@@ -125,7 +125,6 @@ export function prefixSumMatrix(matrix) {
 }
 
 export function rangeSum(prefix, r1, c1, r2, c2) {
-    // inclusive, 0-indexed cell coordinates into the original matrix
     return (
         prefix[r2 + 1][c2 + 1] -
         prefix[r1][c2 + 1] -
@@ -133,11 +132,6 @@ export function rangeSum(prefix, r1, c1, r2, c2) {
         prefix[r1][c1]
     );
 }
-
-// Matrix multiplication and exponentiation use BigInt internally.
-// Regular doubles lose precision once products exceed 2^53 (which
-// happens quickly once values get mod'ed by something like 1e9+7 and
-// then multiplied), so this keeps results exact regardless of size.
 
 export function multiplyMatricesBig(a, b, mod = null) {
     const rowsA = a.length;

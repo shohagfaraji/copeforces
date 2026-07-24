@@ -15,7 +15,6 @@ export function charFrequency(s) {
     return Object.entries(freq).sort((a, b) => b[1] - a[1]);
 }
 
-// Polynomial hash: hash = (s[0]*base^(n-1) + s[1]*base^(n-2) + ... + s[n-1]) mod m
 export function polynomialHash(s, base, mod) {
     const b = BigInt(base);
     const m = BigInt(mod);
@@ -31,8 +30,6 @@ export function polynomialHash(s, base, mod) {
         : hash.toString();
 }
 
-// Prefix function (KMP failure function): pi[i] = length of the longest
-// proper prefix of s[0..i] that is also a suffix of s[0..i].
 export function prefixFunction(s) {
     const n = s.length;
     const pi = new Array(n).fill(0);
@@ -47,8 +44,6 @@ export function prefixFunction(s) {
     return pi;
 }
 
-// Z-function: z[i] = length of the longest substring starting at i
-// that matches a prefix of s.
 export function zFunction(s) {
     const n = s.length;
     const z = new Array(n).fill(0);
@@ -69,7 +64,6 @@ export function zFunction(s) {
     return z;
 }
 
-// Returns all starting indices (0-based) where pattern occurs in text, using KMP.
 export function findOccurrences(text, pattern) {
     if (pattern.length === 0 || pattern.length > text.length) return [];
     const pi = prefixFunction(pattern);

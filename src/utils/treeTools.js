@@ -1,5 +1,3 @@
-// Parses either an edge list ("u v" per line) or a parent array
-// ("child parent" per line, where parent -1 or 0 marks the root).
 export function parseTreeInput(text) {
     const lines = text
         .trim()
@@ -18,7 +16,7 @@ export function parseTreeInput(text) {
             nodeSet.add(b);
             edges.push({ u: a, v: b, w: 1 });
         } else {
-            nodeSet.add(a); // root with no parent — still a node
+            nodeSet.add(a);
         }
     }
 
@@ -37,13 +35,10 @@ export function buildTreeAdjacency(nodes, edges) {
     return adj;
 }
 
-// Picks a root: the first node mentioned in input order that's
-// also present in the node list. Caller can override.
 export function pickRoot(nodes) {
     return nodes[0];
 }
 
-// Returns { parent, depth, order } via BFS from root.
 export function buildTreeStructure(nodes, adj, root) {
     const parent = {};
     const depth = {};
@@ -166,8 +161,6 @@ export function subtreeHeights(nodes, adj, root) {
     return heights;
 }
 
-// LCA via parent-pointer climbing using depth — fine for hand-typed
-// tree sizes; no need for binary lifting here.
 export function findLCA(parent, depth, a, b) {
     let x = a,
         y = b;
@@ -194,9 +187,6 @@ export function pathToRoot(parent, node) {
     return path;
 }
 
-// Diameter via two BFS passes: BFS from any node to find the farthest
-// node u, then BFS from u to find the farthest node v — u..v is a
-// diameter path. Returns { length, path }.
 export function treeDiameter(nodes, adj) {
     function bfsFarthest(start) {
         const dist = { [start]: 0 };

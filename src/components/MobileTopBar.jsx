@@ -36,12 +36,12 @@ function MobileTopBar({
             {activeMeta ? (
                 <div className="flex items-baseline gap-1.5 min-w-0 flex-1 justify-center">
                     <span
-                        className="font-mono-cf text-xs font-bold flex-shrink-0"
+                        className="font-mono-cf text-sm font-bold flex-shrink-0"
                         style={{ color: activeMeta.color }}
                     >
                         {activeMeta.tag}
                     </span>
-                    <span className="text-sm font-medium truncate">
+                    <span className="text-base font-medium truncate">
                         {activeMeta.title}
                     </span>
                 </div>

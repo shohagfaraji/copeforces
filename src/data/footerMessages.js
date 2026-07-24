@@ -1,7 +1,3 @@
-// 11 rotating footer lines — a mix of CP trivia, motivation, and the
-// occasional joke. Picked by the current hour (see useHourlyMessage)
-// so it changes once an hour with no timer or backend involved, and
-// is already correct the instant the page loads.
 export const FOOTER_MESSAGES = [
     "Every Codeforces handle was once 'newbie' — gray is just where the story starts.",
     "Fun fact: the first Codeforces round was held in 2010 — you've had 15+ years to catch up.",
@@ -16,9 +12,6 @@ export const FOOTER_MESSAGES = [
     "Somewhere, someone just got AC on the problem you're about to give up on.",
 ];
 
-// Deterministic pick: same formula everywhere, so server-rendered and
-// client-rendered output always agree, and it advances exactly once
-// per hour in the visitor's own local time.
 export function getHourlyMessage(date = new Date()) {
     const hourBucket = Math.floor(date.getTime() / (1000 * 60 * 60));
     const index = hourBucket % FOOTER_MESSAGES.length;
