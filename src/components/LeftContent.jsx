@@ -41,6 +41,7 @@ const SECTION_CONTENT = {
 };
 
 const NAV_SCROLL_OFFSET = 18;
+const TOOL_HIGHLIGHT_DURATION = 1500;
 
 function LeftContent({ theme, toggleTheme }) {
     const scrollRef = useRef(null);
@@ -48,6 +49,9 @@ function LeftContent({ theme, toggleTheme }) {
     const { collapsed, mobileOpen, toggle, closeMobile } = useSidebar();
     const [mobileTopBarHidden, setMobileTopBarHidden] = useState(false);
     const lastScrollTopRef = useRef(0);
+    const highlightedToolRef = useRef(null);
+    const highlightTimeoutRef = useRef(null);
+    const highlightWaitFrameRef = useRef(null);
 
     const activeMeta = sections.find((s) => s.id === activeSection);
     function handleSectionNavigate(sectionId) {
@@ -67,6 +71,48 @@ function LeftContent({ theme, toggleTheme }) {
 
         let ticking = false;
         const revealTopBar = () => setMobileTopBarHidden(false);
+        const highlightTool = (target) => {
+            if (highlightTimeoutRef.current) {
+                window.clearTimeout(highlightTimeoutRef.current);
+            }
+
+            highlightedToolRef.current?.classList.remove(
+                "cf-tool-card--highlighted",
+            );
+            target.classList.remove("cf-tool-card--highlighted");
+            void target.offsetWidth;
+            target.classList.add("cf-tool-card--highlighted");
+            highlightedToolRef.current = target;
+
+            highlightTimeoutRef.current = window.setTimeout(() => {
+                target.classList.remove("cf-tool-card--highlighted");
+                if (highlightedToolRef.current === target) {
+                    highlightedToolRef.current = null;
+                }
+                highlightTimeoutRef.current = null;
+            }, TOOL_HIGHLIGHT_DURATION);
+        };
+        const highlightToolAfterScroll = (target) => {
+            if (!target.classList.contains("cf-tool-card")) return;
+
+            if (highlightWaitFrameRef.current) {
+                cancelAnimationFrame(highlightWaitFrameRef.current);
+            }
+
+            const waitForScroll = () => {
+                if (container.__smoothScrollFrame) {
+                    highlightWaitFrameRef.current = requestAnimationFrame(
+                        waitForScroll,
+                    );
+                    return;
+                }
+
+                highlightWaitFrameRef.current = null;
+                highlightTool(target);
+            };
+
+            highlightWaitFrameRef.current = requestAnimationFrame(waitForScroll);
+        };
         const handleAnchorClick = (event) => {
             const eventTarget =
                 event.target instanceof Element
@@ -106,6 +152,7 @@ function LeftContent({ theme, toggleTheme }) {
                 offset: NAV_SCROLL_OFFSET,
                 respectReducedMotion: false,
             });
+            highlightToolAfterScroll(scrollTarget);
         };
 
         const handleScroll = () => {
@@ -135,6 +182,15 @@ function LeftContent({ theme, toggleTheme }) {
         document.addEventListener("visibilitychange", revealTopBar);
 
         return () => {
+            if (highlightWaitFrameRef.current) {
+                cancelAnimationFrame(highlightWaitFrameRef.current);
+            }
+            if (highlightTimeoutRef.current) {
+                window.clearTimeout(highlightTimeoutRef.current);
+            }
+            highlightedToolRef.current?.classList.remove(
+                "cf-tool-card--highlighted",
+            );
             container.removeEventListener("scroll", handleScroll);
             container.removeEventListener("click", handleAnchorClick, true);
             window.removeEventListener("focus", revealTopBar);

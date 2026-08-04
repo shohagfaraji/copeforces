@@ -271,6 +271,33 @@ textarea {
         transform 180ms ease;
 }
 
+.cf-tool-card.cf-tool-card--highlighted {
+    animation: cf-tool-card-highlight 1.5s ease-out;
+}
+
+@keyframes cf-tool-card-highlight {
+    0%,
+    30% {
+        border-color: var(--sec-accent);
+        box-shadow:
+            0 0 0 2px var(--sec-accent-soft),
+            0 0 22px 5px var(--sec-accent-soft);
+    }
+
+    100% {
+        border-color: var(--line);
+        box-shadow: var(--shadow-subtle);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cf-tool-card.cf-tool-card--highlighted {
+        animation: none;
+        border-color: var(--sec-accent) !important;
+        box-shadow: 0 0 0 2px var(--sec-accent-soft);
+    }
+}
+
 .cf-tool-grid {
     container-type: inline-size;
     display: grid;
