@@ -4,7 +4,6 @@ import {
     binaryCalculate,
     bigIntCalculate,
     convertBase,
-    evaluateExpression,
     evaluateFormula,
     extractFormulaVariables,
     fastCalculate,
@@ -104,6 +103,10 @@ import {
     generateRandomTree,
     parseConstraints,
 } from "../src/utils/testGenerator.js";
+import {
+    evaluateScientificExpression,
+    parseScientificExpression,
+} from "../src/utils/scientificCalculator.js";
 
 function test(name, fn) {
     try {
@@ -145,14 +148,57 @@ function formatFractionForTest(numerator, denominator) {
         : `${numerator / divisor}/${denominator / divisor}`;
 }
 
+test("scientific calculator preserves huge integers and parses natural notation", () => {
+    const huge = evaluateScientificExpression(
+        "999999999999999999999999 * 999999999999999999999999",
+    );
+    assert.equal(huge.exact, true);
+    assert.equal(
+        huge.formatted,
+        "999999999999999999999998000000000000000000000001",
+    );
+    assert.equal(evaluateScientificExpression("2^100").formatted, "1267650600228229401496703205376");
+    assert.equal(evaluateScientificExpression("root(3, -8)").formatted, "-2");
+    assert.equal(
+        evaluateScientificExpression("sqrt((10^100 + 1)^2)").formatted,
+        `1${"0".repeat(99)}1`,
+    );
+    assert.equal(evaluateScientificExpression("sin(30)", { angleMode: "deg", precision: 1 }).formatted, "0.5");
+    assert.equal(evaluateScientificExpression("sqrt(2)", { precision: 2 }).formatted, "1.41");
+    assert.equal(evaluateScientificExpression("1/8", { precision: 4 }).formatted, "0.1250");
+    assert.equal(evaluateScientificExpression("1.999", { precision: 2 }).formatted, "1.99");
+    assert.equal(evaluateScientificExpression("-1.999", { precision: 2 }).formatted, "-1.99");
+    assert.equal(evaluateScientificExpression("1.999", { precision: 0 }).formatted, "1");
+    assert.equal(evaluateScientificExpression("sqrt(2)", { precision: 1024 }).precision, 1024);
+    assert.equal(evaluateScientificExpression("sqrt(2)", { precision: 0 }).formatted, "1");
+    assert.equal(evaluateScientificExpression("sqrt(2)", { precision: 0 }).precision, 0);
+    assert.equal(evaluateScientificExpression("log(2, 8)", { precision: 0 }).formatted, "3");
+    assert.equal(evaluateScientificExpression("log(1, 8)").error, "Log base must be positive and cannot be 1");
+    assert.equal(evaluateScientificExpression("1000!").digits, 2568);
+    assert.match(evaluateScientificExpression("5001!").error, /blocked to keep the page responsive/);
+    assert.match(evaluateScientificExpression("exp(10000)").error, /blocked to keep the page responsive/);
+    assert.match(evaluateScientificExpression("ncr(10000, 3000)").error, /blocked to keep the page responsive/);
+    assert.match(evaluateScientificExpression("99^30000").error, /blocked to keep the page responsive/);
+    assert.match(evaluateScientificExpression("10^13000/3").error, /blocked to keep the page responsive/);
+    assert.match(parseScientificExpression("1".repeat(20001)).error, /expression is too long/);
+    assert.equal(evaluateScientificExpression("sqrt()").error, "sqrt expects 1 value");
+    assert.equal(evaluateScientificExpression("root(2)").error, "root expects 2 values");
+    assert.equal(evaluateScientificExpression("sqrt(4, 9)").error, "sqrt expects 1 value");
+    assert.equal(evaluateScientificExpression("sqrt(4, exp(10000))").error, "sqrt expects 1 value");
+    assert.equal(evaluateScientificExpression("gcd(12, 8, 4)").error, "gcd expects 2 values");
+    assert.match(
+        evaluateScientificExpression(`root(2, ${"9".repeat(13000)})`).error,
+        /blocked to keep the page responsive/,
+    );
+    assert.equal(evaluateScientificExpression("-2^2").formatted, "-4");
+    assert.equal(evaluateScientificExpression("ncr(100, 50)").formatted, "100891344545564193334812497256");
+    assert.equal(evaluateScientificExpression("1/0").error, "Cannot divide by zero");
+    assert.equal(parseScientificExpression("1/(2+3)").ast.operator, "/");
+});
+
 test("contest utilities handle signed, exact, and invalid inputs", () => {
     assert.equal(convertBase("-ff", 16, 10), "-255");
     assert.equal(convertBase("-", 10, 2), null);
-    assert.equal(evaluateExpression("2^3^2").result, 512);
-    assert.equal(evaluateExpression("-5 + 2").result, -3);
-    assert.equal(evaluateExpression("2 * -3").result, -6);
-    assert.equal(evaluateExpression("-(2 + 3)").result, -5);
-    assert.equal(evaluateExpression("1..2").error, "invalid expression");
     const fastHuge = fastCalculate(
         "9223372036854775808",
         "9223372036854775808",

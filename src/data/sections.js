@@ -13,9 +13,20 @@ export const RANK_COLORS = [
 
 const rawSections = [
     { id: "debug-tools", title: "Debug Tools", tag: "DBG" },
-    {id: "contest-utilities", title: "Contest Utilities", tag: "CU", status: "Updated" },
     { id: "test-generator", title: "Test Generator", tag: "GEN" },
-    { id: "strings", title: "Strings", tag: "ST", status: "Updated" },
+    {
+        id: "scientific-calculator",
+        title: "Scientific Calculator",
+        tag: "CAL",
+        status: "New",
+        color: "#2563C7",
+    },
+    {
+        id: "contest-utilities",
+        title: "Contest Utilities",
+        tag: "CU",
+    },
+    { id: "strings", title: "Strings", tag: "ST" },
     { id: "number-theory", title: "Number Theory", tag: "NT" },
     { id: "matrix", title: "Matrix", tag: "MX" },
     { id: "search", title: "Search", tag: "SR" },
@@ -26,7 +37,7 @@ const rawSections = [
         tag: "SG",
         status: "New",
     },
-    { id: "graphs", title: "Graphs", tag: "GR", status: "Updated" },
+    { id: "graphs", title: "Graphs", tag: "GR" },
     { id: "dynamic-programming", title: "Dynamic Programming", tag: "DP" },
     { id: "greedy", title: "Greedy", tag: "GD" },
     { id: "quick-reference", title: "Quick Reference", tag: "REF" },

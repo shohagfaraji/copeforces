@@ -9,6 +9,7 @@ import { sections } from "../data/sections";
 import { useActiveSection } from "../hooks/useActiveSection";
 import { useSidebar } from "../hooks/useSidebar";
 import ContestUtilitiesContent from "./sections/ContestUtilitiesContent";
+import ScientificCalculatorContent from "./sections/ScientificCalculatorContent";
 import DebugToolsContent from "./sections/DebugToolsContent";
 import TestGeneratorContent from "./sections/TestGeneratorContent";
 import StringsContent from "./sections/StringsContent";
@@ -23,6 +24,7 @@ import GreedyContent from "./sections/GreedyContent";
 import QuickReferenceContent from "./sections/QuickReferenceContent";
 
 const SECTION_CONTENT = {
+    "scientific-calculator": ScientificCalculatorContent,
     "contest-utilities": ContestUtilitiesContent,
     "debug-tools": DebugToolsContent,
     "test-generator": TestGeneratorContent,

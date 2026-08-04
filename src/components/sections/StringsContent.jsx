@@ -816,7 +816,6 @@ function StringsContent() {
                     id="st-trie-visualization"
                     icon={FaProjectDiagram}
                     label="Trie visualization"
-                    badge="New"
                     className="cf-tool-wide"
                 >
                     <TrieVisualization />
