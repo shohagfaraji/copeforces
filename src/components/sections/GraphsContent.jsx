@@ -606,7 +606,6 @@ function GraphsContent() {
                     id="gr-cycle-detection"
                     icon={FaSyncAlt}
                     label="Cycle detection"
-                    badge="New"
                     className="gr-tool-cycle"
                 >
                     <CycleDetectionTool
@@ -620,7 +619,6 @@ function GraphsContent() {
                     id="gr-bipartite-check"
                     icon={FaCheckCircle}
                     label="Bipartite check"
-                    badge="New"
                     className="gr-tool-bipartite"
                 >
                     <BipartiteTool nodes={nodes} result={bipartite} />
@@ -630,7 +628,6 @@ function GraphsContent() {
                     id="gr-degree-analysis"
                     icon={FaBalanceScale}
                     label="Degree analysis"
-                    badge="New"
                     className="gr-tool-degree"
                 >
                     <DegreeAnalysisTool

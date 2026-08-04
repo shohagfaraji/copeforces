@@ -6,7 +6,6 @@ import {
     FaFont,
     FaMicrochip,
     FaLandmark,
-    FaSuperscript,
     FaInfinity,
     FaExclamationTriangle,
     FaRulerCombined,
@@ -18,7 +17,6 @@ import {
     convertBase,
     toRoman,
     fromRoman,
-    evaluateExpression,
     fastCalculate,
     binaryCalculate,
     bigIntCalculate,
@@ -698,29 +696,6 @@ function RomanConverterTool() {
     );
 }
 
-function ExpressionEvaluatorTool() {
-    const [expr, setExpr] = useState("(3 + 4) * 2 ^ 3");
-
-    const { result, error } = evaluateExpression(expr);
-
-    return (
-        <div className="space-y-3">
-            <Field
-                label="expression (+ − × ÷ ^ % and parentheses)"
-                value={expr}
-                onChange={setExpr}
-                width="w-full"
-                invalid={!!error}
-            />
-            <OutputPanel
-                value={`= ${result}`}
-                error={error}
-                copyValue={result}
-            />
-        </div>
-    );
-}
-
 function FormulaInput({ label, value, onChange, invalid = false }) {
     return (
         <label
@@ -1089,17 +1064,9 @@ const TOOLS = [
         Component: RomanConverterTool,
     },
     {
-        id: "cu-expression-evaluator",
-        label: "Expression evaluator",
-        icon: FaSuperscript,
-        hint: "Evaluate arithmetic expressions",
-        Component: ExpressionEvaluatorTool,
-    },
-    {
         id: "cu-formula-solver",
         label: "Formula evaluator",
         icon: FaSquareRootAlt,
-        badge: "New",
         hint: "Variables, huge integers, optional modulo",
         large: true,
         Component: FormulaSolverTool,
