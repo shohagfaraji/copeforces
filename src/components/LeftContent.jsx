@@ -22,8 +22,10 @@ import GraphsContent from "./sections/GraphsContent";
 import DynamicProgrammingContent from "./sections/DynamicProgrammingContent";
 import GreedyContent from "./sections/GreedyContent";
 import QuickReferenceContent from "./sections/QuickReferenceContent";
+import MyToolsContent from "./sections/MyToolsContent";
 
 const SECTION_CONTENT = {
+    "my-tools": MyToolsContent,
     "scientific-calculator": ScientificCalculatorContent,
     "contest-utilities": ContestUtilitiesContent,
     "debug-tools": DebugToolsContent,
