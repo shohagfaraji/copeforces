@@ -16,6 +16,7 @@ import {
 import GraphCanvas from "../GraphCanvas";
 import AlgorithmRunner from "../AlgorithmRunner";
 import { sections } from "../../data/sections";
+import { LineNumberedTextarea } from "../LineNumberedText";
 
 const ACCENT = sections.find((s) => s.id === "graphs")?.color || "#AA00AA";
 const ERROR_COLOR = "#c0392b";
@@ -539,7 +540,7 @@ function GraphsContent() {
                     className="gr-tool-builder"
                 >
                     <div className="cf-builder-layout">
-                        <textarea
+                        <LineNumberedTextarea
                             value={edgeText}
                             onChange={(e) => {
                                 setEdgeText(e.target.value);
@@ -547,7 +548,8 @@ function GraphsContent() {
                             }}
                             placeholder={"u v\nu v w"}
                             rows={10}
-                            className="cf-builder-textarea p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
+                            containerClassName="cf-builder-textarea"
+                            className="w-full p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
                             style={{
                                 borderColor: "var(--line)",
                                 backgroundColor: "var(--bg)",

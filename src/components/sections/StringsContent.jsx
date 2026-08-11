@@ -15,6 +15,7 @@ import {
     findOccurrences,
 } from "../../utils/stringTools";
 import { sections } from "../../data/sections";
+import { LineNumberedTextarea } from "../LineNumberedText";
 
 const ACCENT = sections.find((s) => s.id === "strings")?.color || "#808080";
 
@@ -157,7 +158,7 @@ function TextInput({ value, onChange, placeholder }) {
 
 function TextAreaInput({ value, onChange, placeholder }) {
     return (
-        <textarea
+        <LineNumberedTextarea
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}

@@ -31,6 +31,10 @@ import {
 } from "../../utils/matrixTools";
 
 import { sections } from "../../data/sections";
+import {
+    LineNumberedText,
+    LineNumberedTextarea,
+} from "../LineNumberedText";
 
 const ACCENT = sections.find((s) => s.id === "matrix")?.color || "#AA00AA";
 
@@ -81,12 +85,13 @@ function TextArea({ label, value, onChange, rows = 6 }) {
             style={{ color: "var(--muted)" }}
         >
             {label}
-            <textarea
+            <LineNumberedTextarea
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 rows={rows}
                 spellCheck={false}
-                className="mt-1 w-full rounded-lg border p-3 font-mono-cf text-xs resize-y outline-none"
+                containerClassName="mt-1"
+                className="w-full rounded-lg border p-3 font-mono-cf text-xs resize-y outline-none"
                 style={{
                     borderColor: "var(--line)",
                     background: "var(--bg)",
@@ -165,13 +170,8 @@ function MatrixOutput({ matrix, sep = " " }) {
     const text = matrix.map((row) => row.join(sep)).join("\n");
 
     return (
-        <div
-            className="rounded-lg border p-4"
-            style={{ borderColor: "var(--line)" }}
-        >
-            <pre className="font-mono-cf text-xs whitespace-pre-wrap break-all">
-                {text}
-            </pre>
+        <div>
+            <LineNumberedText value={text} />
 
             <div className="mt-3">
                 <CopyButton value={text} />

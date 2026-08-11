@@ -65,7 +65,7 @@ function CopyButton({ value }) {
     );
 }
 
-function TextArea({ label, value, onChange, rows = 3 }) {
+function TextArea({ label, value, onChange, rows = 2 }) {
     return (
         <label
             className="block text-xs font-mono-cf"
@@ -75,9 +75,9 @@ function TextArea({ label, value, onChange, rows = 3 }) {
             <textarea
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                rows={rows}
+                rows={Math.min(rows, 2)}
                 spellCheck={false}
-                className="mt-1 w-full rounded-lg border p-3 font-mono-cf text-xs resize-y outline-none"
+                className="mt-1 w-full rounded-lg border p-3 font-mono-cf text-xs resize-none outline-none"
                 style={{
                     borderColor: "var(--line)",
                     background: "var(--bg)",
@@ -217,7 +217,7 @@ function SortedArrayInput({
     label,
     value,
     onChange,
-    rows = 3,
+    rows = 2,
     showPreview = true,
 }) {
     function handleChange(e) {
@@ -257,9 +257,9 @@ function SortedArrayInput({
                     value={value}
                     onChange={handleChange}
                     onPaste={handlePaste}
-                    rows={rows}
+                    rows={Math.min(rows, 2)}
                     spellCheck={false}
-                    className="mt-1 w-full rounded-lg border p-3 font-mono-cf text-xs resize-y outline-none"
+                    className="mt-1 w-full rounded-lg border p-3 font-mono-cf text-xs resize-none outline-none"
                     style={{
                         borderColor: "var(--line)",
                         background: "var(--bg)",

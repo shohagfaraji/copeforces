@@ -461,7 +461,7 @@ function NumberTheoryContent() {
                         value={input}
                         onChange={handleChange}
                         placeholder="Paste numbers separated by spaces, e.g. 12 17 100 7"
-                        rows={3}
+                        rows={2}
                         className="w-full p-3 rounded-md border font-mono-cf text-sm resize-none outline-none focus:ring-1"
                         style={{
                             borderColor: "var(--line)",

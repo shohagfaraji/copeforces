@@ -271,6 +271,67 @@ textarea {
         transform 180ms ease;
 }
 
+.cf-line-numbered-editor,
+.cf-line-numbered-output {
+    position: relative;
+    min-width: 0;
+}
+
+.cf-line-number-gutter {
+    position: absolute;
+    z-index: 1;
+    top: 1px;
+    bottom: 1px;
+    left: 1px;
+    overflow: hidden;
+    border-right: 1px solid var(--line);
+    border-radius: 0.45rem 0 0 0.45rem;
+    background: color-mix(in srgb, var(--panel-soft) 88%, transparent);
+    color: var(--muted);
+    pointer-events: none;
+    user-select: none;
+}
+
+.cf-line-number-gutter-inner {
+    padding: 0.75rem 0.55rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    line-height: 1.55rem;
+    text-align: right;
+    opacity: 0.72;
+    will-change: transform;
+}
+
+textarea.cf-line-numbered-textarea {
+    display: block;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    padding-left: calc(var(--line-number-gutter-width) + 0.75rem) !important;
+    line-height: 1.55rem;
+    white-space: pre;
+    overflow-wrap: normal;
+}
+
+.cf-line-numbered-output {
+    max-width: 100%;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--bg);
+}
+
+.cf-line-numbered-pre {
+    min-width: max-content;
+    min-height: calc(1.55rem + 1.5rem);
+    margin: 0;
+    padding: 0.75rem 0.75rem 0.75rem
+        calc(var(--line-number-gutter-width) + 0.75rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.55rem;
+    white-space: pre;
+}
+
 .cf-tool-card.cf-tool-card--highlighted {
     animation: cf-tool-card-highlight 1.5s ease-out;
 }
