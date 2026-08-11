@@ -12,6 +12,7 @@ export const RANK_COLORS = [
 ];
 
 const rawSections = [
+    { id: "my-tools", title: "My Tools", tag: "MY", status: "New" },
     { id: "debug-tools", title: "Debug Tools", tag: "DBG" },
     { id: "test-generator", title: "Test Generator", tag: "GEN" },
     {

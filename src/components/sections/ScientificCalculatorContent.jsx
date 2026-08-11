@@ -329,7 +329,12 @@ function ScientificCalculatorContent() {
 
     return (
         <div className="sc-shell">
-            <div className="sc-calculator">
+            <div
+                id="cal-scientific-calculator"
+                className="sc-calculator"
+                data-tool-id="cal-scientific-calculator"
+                data-tool-label="Scientific calculator"
+            >
                 <div className="sc-display" onClick={() => inputRef.current?.focus()} role="presentation">
                     <div className={`sc-natural ${expression.trim() === "" ? "is-empty" : ""}`} aria-label="Typeset expression">
                         {expression.trim() === "" ? <span className="sc-empty">Enter a calculation</span> : parsed.ast ? <MathNode node={parsed.ast} /> : <span className="sc-source-fallback">{expression}</span>}

@@ -1372,7 +1372,13 @@ function SegmentTreeContent() {
                 "--sec-accent-bg": `${ACCENT}18`,
             }}
         >
-            <div className="cf-tool-card sg-studio" ref={studioRef}>
+            <div
+                id="sg-segment-tree-studio"
+                className="cf-tool-card sg-studio"
+                data-tool-id="sg-segment-tree-studio"
+                data-tool-label="Segment tree studio"
+                ref={studioRef}
+            >
                 <DatasetBuilder
                     draft={draft}
                     setDraft={setDraft}
