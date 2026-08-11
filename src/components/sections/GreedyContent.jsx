@@ -8,6 +8,7 @@ import {
     jobSequencing,
 } from "../../utils/greedyTools";
 import { sections } from "../../data/sections";
+import { LineNumberedTextarea } from "../LineNumberedText";
 
 const ACCENT = sections.find((s) => s.id === "greedy")?.color || "#03A89E";
 
@@ -93,12 +94,13 @@ const TOOLS = [
 
 function TextArea({ value, onChange, placeholder, rows = 4 }) {
     return (
-        <textarea
+        <LineNumberedTextarea
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             rows={rows}
-            className="w-full sm:w-48 p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
+            containerClassName="w-full sm:w-48"
+            className="w-full p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
             style={{
                 borderColor: "var(--line)",
                 backgroundColor: "var(--bg)",

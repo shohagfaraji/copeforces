@@ -25,6 +25,10 @@ import {
 } from "../../utils/testGenerator";
 
 import { sections } from "../../data/sections";
+import {
+    LineNumberedText,
+    LineNumberedTextarea,
+} from "../LineNumberedText";
 
 const ACCENT =
     sections.find((s) => s.id === "test-generator")?.color || "#03A89E";
@@ -156,12 +160,13 @@ function TextArea({ label, value, onChange, rows = 6 }) {
             style={{ color: "var(--muted)" }}
         >
             {label}
-            <textarea
+            <LineNumberedTextarea
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 rows={rows}
                 spellCheck={false}
-                className="mt-1 w-full rounded-lg border p-3 font-mono-cf text-xs resize-y outline-none"
+                containerClassName="mt-1"
+                className="w-full rounded-lg border p-3 font-mono-cf text-xs resize-y outline-none"
                 style={{
                     borderColor: "var(--line)",
                     background: "var(--bg)",
@@ -173,14 +178,22 @@ function TextArea({ label, value, onChange, rows = 6 }) {
 }
 
 function OutputBlock({ text, onRegenerate, regenerateLabel }) {
+    const isMultiline = String(text).includes("\n");
+
     return (
-        <div
-            className="rounded-lg border p-4"
-            style={{ borderColor: "var(--line)" }}
-        >
-            <pre className="font-mono-cf text-xs whitespace-pre-wrap break-all">
-                {text}
-            </pre>
+        <div>
+            {isMultiline ? (
+                <LineNumberedText value={text} />
+            ) : (
+                <div
+                    className="rounded-lg border p-4"
+                    style={{ borderColor: "var(--line)" }}
+                >
+                    <pre className="font-mono-cf text-xs whitespace-pre-wrap break-all">
+                        {text}
+                    </pre>
+                </div>
+            )}
 
             <div className="mt-3 flex items-center gap-2">
                 <CopyButton value={text} />
@@ -658,9 +671,7 @@ function CustomConstraintsTool() {
                         >
                             Labeled
                         </div>
-                        <pre className="font-mono-cf text-xs whitespace-pre-wrap">
-                            {labeled}
-                        </pre>
+                        <LineNumberedText value={labeled} />
                     </div>
 
                     <OutputBlock

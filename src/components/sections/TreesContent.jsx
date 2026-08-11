@@ -19,6 +19,7 @@ import {
 import GraphCanvas from "../GraphCanvas";
 import AlgorithmRunner from "../AlgorithmRunner";
 import { sections } from "../../data/sections";
+import { LineNumberedTextarea } from "../LineNumberedText";
 
 const ACCENT = sections.find((s) => s.id === "trees")?.color || "#03A89E";
 
@@ -212,7 +213,7 @@ function TreesContent() {
                             style={{ color: "var(--muted)" }}
                         >
                             Edge list
-                            <textarea
+                            <LineNumberedTextarea
                                 value={treeText}
                                 onChange={(e) => {
                                     setTreeText(e.target.value);
@@ -220,7 +221,8 @@ function TreesContent() {
                                 }}
                                 placeholder={"u v\nu v"}
                                 rows={10}
-                                className="cf-builder-textarea mt-1 p-2 rounded-md border font-mono-cf resize-none outline-none focus:ring-1"
+                                containerClassName="cf-builder-textarea mt-1"
+                                className="w-full p-2 rounded-md border font-mono-cf resize-none outline-none focus:ring-1"
                                 style={{
                                     borderColor: "var(--line)",
                                     backgroundColor: "var(--bg)",

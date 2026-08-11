@@ -24,6 +24,7 @@ import {
 } from "../../utils/debugTools";
 
 import { sections } from "../../data/sections";
+import { LineNumberedTextarea } from "../LineNumberedText";
 
 const ACCENT = sections.find((s) => s.id === "debug-tools")?.color || "#8b5cf6";
 
@@ -84,7 +85,13 @@ function RefreshButton({ onClick, label = "Regenerate" }) {
     );
 }
 
-function TextArea({ label, value, onChange, rows = 10 }) {
+function TextArea({
+    label,
+    value,
+    onChange,
+    rows = 10,
+    lineNumbers = true,
+}) {
     return (
         <label
             className="block text-xs font-mono-cf"
@@ -92,18 +99,34 @@ function TextArea({ label, value, onChange, rows = 10 }) {
         >
             {label}
 
-            <textarea
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                rows={rows}
-                spellCheck={false}
-                className="mt-1 w-full rounded-lg border p-3 font-mono-cf text-xs resize-y outline-none"
-                style={{
-                    borderColor: "var(--line)",
-                    background: "var(--bg)",
-                    color: "var(--ink)",
-                }}
-            />
+            {lineNumbers ? (
+                <LineNumberedTextarea
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    rows={rows}
+                    spellCheck={false}
+                    containerClassName="mt-1"
+                    className="w-full rounded-lg border p-3 font-mono-cf text-xs resize-y outline-none"
+                    style={{
+                        borderColor: "var(--line)",
+                        background: "var(--bg)",
+                        color: "var(--ink)",
+                    }}
+                />
+            ) : (
+                <textarea
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    rows={Math.min(rows, 2)}
+                    spellCheck={false}
+                    className="mt-1 w-full rounded-lg border p-3 font-mono-cf text-xs resize-none outline-none"
+                    style={{
+                        borderColor: "var(--line)",
+                        background: "var(--bg)",
+                        color: "var(--ink)",
+                    }}
+                />
+            )}
         </label>
     );
 }
@@ -685,9 +708,10 @@ function ShuffleArrayTool() {
         <div className="space-y-4">
             <TextArea
                 label="Array"
-                rows={3}
+                rows={2}
                 value={input}
                 onChange={setInput}
+                lineNumbers={false}
             />
 
             <div
@@ -723,9 +747,10 @@ function CheckSortedTool() {
         <div className="space-y-4">
             <TextArea
                 label="Array"
-                rows={5}
+                rows={2}
                 value={input}
                 onChange={setInput}
+                lineNumbers={false}
             />
 
             <label className="flex items-center gap-2 text-xs font-mono-cf">
@@ -783,9 +808,10 @@ function FindDuplicatesTool() {
         <div className="space-y-4">
             <TextArea
                 label="Array"
-                rows={5}
+                rows={2}
                 value={input}
                 onChange={setInput}
+                lineNumbers={false}
             />
 
             {duplicates.length === 0 ? (
@@ -835,8 +861,20 @@ function CompareFrequenciesTool() {
     return (
         <div className="space-y-4">
             <div className="dbg-dual-inputs grid gap-4">
-                <TextArea label="Array A" rows={1} value={a} onChange={setA} />
-                <TextArea label="Array B" rows={1} value={b} onChange={setB} />
+                <TextArea
+                    label="Array A"
+                    rows={1}
+                    value={a}
+                    onChange={setA}
+                    lineNumbers={false}
+                />
+                <TextArea
+                    label="Array B"
+                    rows={1}
+                    value={b}
+                    onChange={setB}
+                    lineNumbers={false}
+                />
             </div>
 
             {result.identical ? (

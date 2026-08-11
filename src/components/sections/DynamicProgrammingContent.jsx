@@ -7,6 +7,7 @@ import {
     longestIncreasingSubsequence,
 } from "../../utils/dpTools";
 import { sections } from "../../data/sections";
+import { LineNumberedTextarea } from "../LineNumberedText";
 
 const ACCENT =
     sections.find((s) => s.id === "dynamic-programming")?.color || "#AA00AA";
@@ -99,14 +100,13 @@ const TOOLS = [
 
 function TextArea({ value, onChange, placeholder, rows = 4, wide = false }) {
     return (
-        <textarea
+        <LineNumberedTextarea
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             rows={rows}
-            className={`w-full p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1 ${
-                wide ? "" : "sm:w-48"
-            }`}
+            containerClassName={`w-full ${wide ? "" : "sm:w-48"}`}
+            className="w-full p-2 rounded-md border font-mono-cf text-xs resize-none outline-none focus:ring-1"
             style={{
                 borderColor: "var(--line)",
                 backgroundColor: "var(--bg)",
