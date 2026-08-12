@@ -8,6 +8,7 @@ import Footer from "./Footer";
 import { sections } from "../data/sections";
 import { useActiveSection } from "../hooks/useActiveSection";
 import { useSidebar } from "../hooks/useSidebar";
+import { usePersistentToolInputs } from "../hooks/usePersistentToolInputs";
 import ContestUtilitiesContent from "./sections/ContestUtilitiesContent";
 import ScientificCalculatorContent from "./sections/ScientificCalculatorContent";
 import DebugToolsContent from "./sections/DebugToolsContent";
@@ -47,6 +48,7 @@ const TOOL_HIGHLIGHT_DURATION = 1500;
 
 function LeftContent({ theme, toggleTheme }) {
     const scrollRef = useRef(null);
+    usePersistentToolInputs(scrollRef);
     const activeSection = useActiveSection(scrollRef);
     const { collapsed, mobileOpen, toggle, closeMobile } = useSidebar();
     const [mobileTopBarHidden, setMobileTopBarHidden] = useState(false);
