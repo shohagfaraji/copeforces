@@ -185,6 +185,9 @@ function MyToolsContent() {
                 event.target instanceof Element
                     ? event.target
                     : event.target?.parentElement;
+
+            if (eventTarget?.closest?.("#my-tools")) return;
+
             let card = eventTarget?.closest?.(
                 ".cf-tool-card[id], [data-tool-id]",
             );
