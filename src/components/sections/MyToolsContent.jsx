@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     FaArrowDown,
     FaArrowUp,
@@ -13,6 +13,8 @@ import { sections } from "../../data/sections";
 const PINNED_STORAGE_KEY = "copeforces:pinned-tools:v1";
 const RECENT_STORAGE_KEY = "copeforces:recent-tools:v1";
 const MAX_RECENT_TOOLS = 8;
+const TOOL_CARD_SELECTOR = ".cf-tool-card[id], [data-tool-id]";
+const SECTION_BY_ID = new Map(sections.map((section) => [section.id, section]));
 
 function readStoredTools(key) {
     try {
@@ -40,7 +42,7 @@ function writeStoredTools(key, tools) {
 
 function metadataFromCard(card) {
     const sectionElement = card.closest(".cf-section-shell");
-    const section = sections.find((item) => item.id === sectionElement?.id);
+    const section = SECTION_BY_ID.get(sectionElement?.id);
     const heading = card.querySelector("h3");
     const toolId = card.dataset.toolId || card.id;
     const toolLabel = card.dataset.toolLabel || heading?.textContent?.trim();
@@ -163,15 +165,14 @@ function MyToolsContent() {
     const [recent, setRecent] = useState(() =>
         readStoredTools(RECENT_STORAGE_KEY),
     );
+    const recentRef = useRef(recent);
     const [toolQuery, setToolQuery] = useState("");
     const [pickerOpen, setPickerOpen] = useState(false);
 
     useEffect(() => {
         const frame = requestAnimationFrame(() => {
             const cards = Array.from(
-                document.querySelectorAll(
-                    ".cf-tool-card[id], [data-tool-id]",
-                ),
+                document.querySelectorAll(TOOL_CARD_SELECTOR),
             );
             setCatalog(cards.map(metadataFromCard).filter(Boolean));
         });
@@ -180,47 +181,60 @@ function MyToolsContent() {
     }, []);
 
     useEffect(() => {
-        function rememberTool(event) {
-            const eventTarget =
-                event.target instanceof Element
-                    ? event.target
-                    : event.target?.parentElement;
-
-            if (eventTarget?.closest?.("#my-tools")) return;
-
-            let card = eventTarget?.closest?.(
-                ".cf-tool-card[id], [data-tool-id]",
-            );
-
-            if (!card) {
-                const link = eventTarget?.closest?.('a[href^="#"]');
-                const id = link?.getAttribute("href")?.slice(1);
-                const linkedTarget = id ? document.getElementById(id) : null;
-                card =
-                    linkedTarget?.classList.contains("cf-tool-card") ||
-                    linkedTarget?.dataset.toolId
-                    ? linkedTarget
-                    : null;
-            }
-
+        function rememberToolFrom(target) {
+            const card = target?.closest?.(TOOL_CARD_SELECTOR);
             if (!card || card.closest("#my-tools")) return;
+
+            const toolId = card.dataset.toolId || card.id;
+            const current = recentRef.current;
+            if (toolId && current[0]?.id === toolId) return;
 
             const tool = metadataFromCard(card);
             if (!tool) return;
 
-            setRecent((current) => {
-                const next = [
-                    tool,
-                    ...current.filter((item) => item.id !== tool.id),
-                ].slice(0, MAX_RECENT_TOOLS);
-                writeStoredTools(RECENT_STORAGE_KEY, next);
-                return next;
-            });
+            const next = [
+                tool,
+                ...current.filter((item) => item.id !== tool.id),
+            ].slice(0, MAX_RECENT_TOOLS);
+
+            recentRef.current = next;
+            setRecent(next);
+            writeStoredTools(RECENT_STORAGE_KEY, next);
         }
 
-        document.addEventListener("pointerdown", rememberTool, true);
-        return () =>
-            document.removeEventListener("pointerdown", rememberTool, true);
+        function eventTargetElement(event) {
+            return event.target instanceof Element
+                ? event.target
+                : event.target?.parentElement;
+        }
+
+        function rememberValueChange(event) {
+            if (!event.isTrusted) return;
+            rememberToolFrom(eventTargetElement(event));
+        }
+
+        function rememberAction(event) {
+            if (!event.isTrusted) return;
+            const button = eventTargetElement(event)?.closest?.("button");
+            if (!button || button.disabled) return;
+            rememberToolFrom(button);
+        }
+
+        function rememberSubmission(event) {
+            if (!event.isTrusted) return;
+            rememberToolFrom(eventTargetElement(event));
+        }
+
+        // Scrolling, focusing, and card taps emit none of these semantic events.
+        document.addEventListener("input", rememberValueChange, true);
+        document.addEventListener("click", rememberAction, true);
+        document.addEventListener("submit", rememberSubmission, true);
+
+        return () => {
+            document.removeEventListener("input", rememberValueChange, true);
+            document.removeEventListener("click", rememberAction, true);
+            document.removeEventListener("submit", rememberSubmission, true);
+        };
     }, []);
 
     const pinnedIds = useMemo(
@@ -267,12 +281,14 @@ function MyToolsContent() {
     }
 
     function clearRecent() {
+        recentRef.current = [];
         setRecent([]);
         writeStoredTools(RECENT_STORAGE_KEY, []);
     }
 
     function removeRecent(toolId) {
         const next = recent.filter((tool) => tool.id !== toolId);
+        recentRef.current = next;
         setRecent(next);
         writeStoredTools(RECENT_STORAGE_KEY, next);
     }
